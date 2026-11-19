@@ -1,7 +1,8 @@
 /* UroBank service worker: keeps the app available without internet.
    The app shell is cached at install; a new version arrives when this file changes. */
-const VERSION = 'urobank-7cfeca7b7b';
+const VERSION = 'urobank-9802cd18f8';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
+const LAZY = ['pdf.min.js', 'pdf.worker.min.js'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -35,5 +36,14 @@ self.addEventListener('fetch', (e) => {
     );
     return;
   }
-  if (SHELL.includes(rel)) e.respondWith(caches.match(req, { ignoreSearch: true }).then((hit) => hit || fetch(req)));
+  if (SHELL.includes(rel)) { e.respondWith(caches.match(req, { ignoreSearch: true }).then((hit) => hit || fetch(req))); return; }
+  // the PDF reader: kept after its first use (a missing file never breaks the app's install)
+  if (LAZY.includes(rel)) {
+    e.respondWith(
+      caches.open(VERSION).then((c) => c.match(req, { ignoreSearch: true }).then((hit) => hit || fetch(req).then((r) => {
+        if (r && r.ok) c.put(req, r.clone());
+        return r;
+      })))
+    );
+  }
 });
