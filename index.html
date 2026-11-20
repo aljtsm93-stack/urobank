@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="UroBank">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#F4F1EA">
-<meta name="urobank-version" content="9802cd18f8">
+<meta name="urobank-version" content="379f62c3eb">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -461,6 +461,41 @@ button.stat { width: 100%; }
 .qmore { display: flex; justify-content: center; padding: 6px 0 28px; }
 @media (max-width: 699px) { .qbody.qscroll { padding: 12px 10px 32px; } .qcard { padding: 12px 12px 14px; border-radius: 16px; } .qtools .ib { width: 34px; height: 34px; } }
 
+/* a question whose answer key disagrees with its explanation */
+.cwarn { border: 1px solid var(--badline); background: var(--badbg); color: var(--bad); border-radius: 14px; padding: 10px 14px; font-size: 14px; line-height: 1.65; }
+.cwarn .en { margin-top: 6px; font-size: 13.5px; color: var(--ink2); }
+
+/* filter: sources with their years / chapters underneath */
+.srctree { display: flex; flex-direction: column; gap: 8px; }
+.srow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.srow .srbtn { margin-inline-start: auto; }
+.sparts { margin: 2px 0 6px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 14px; background: var(--bg2, transparent); }
+.sparts .lnk { margin-top: 6px; }
+
+/* custom multi-day plan (خطة خاصة) */
+.cpgrid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.cpcol { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.cpcol .lbl { display: block; font-weight: 700; font-size: 14.5px; margin: 0 0 8px; }
+.cpcol .lbl .note { font-weight: 500; }
+.cpcount { display: flex; align-items: baseline; gap: 8px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--line2); }
+.cpcount b { font-size: 34px; font-family: var(--fe); font-weight: 800; color: var(--pri); line-height: 1; }
+.cpcount span { color: var(--ink2); font-size: 14px; }
+.cpdays { display: flex; flex-direction: column; gap: 6px; max-height: 440px; overflow: auto; padding: 2px; }
+.cpday { display: flex; align-items: center; gap: 10px; padding: 6px 8px 6px 10px; border-radius: 12px; border: 1px solid var(--line2); }
+.cpday.now { border-color: var(--pri); background: var(--pri2); }
+.cpday .stepper { padding: 2px 4px; }
+.cpday .stepper .sb { width: 32px; height: 32px; font-size: 18px; }
+.cpday .stepper input.thin { width: 56px; height: 34px; font-size: 16px; }
+.cptoday { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: var(--pri2); flex-wrap: wrap; }
+.cptoday.done { background: var(--okbg); }
+.stepper .sb:disabled { opacity: .35; }
+.qstats .sec { margin-bottom: 8px; }
+.qstats .stat span { display: block; line-height: 1.45; overflow-wrap: anywhere; }
+@media (max-width: 1023px) { .cpgrid { grid-template-columns: minmax(0, 1fr); } }
+/* long chapter names wrap inside the source tree instead of running off the card */
+.sparts .chip { max-width: 100%; white-space: normal; text-align: start; line-height: 1.35; padding-top: 7px; padding-bottom: 7px; }
+.sparts .chip .t { overflow-wrap: anywhere; }
+
 </style>
 </head>
 <body>
@@ -799,7 +834,7 @@ button.stat { width: 100%; }
     mod: { label: 'نوع الصورة', v: [['CT', 'CT'], ['MRI', 'MRI'], ['US', 'US'], ['IVU', 'IVU'], ['VCUG', 'Cystogram / VCUG'], ['Nuclear', 'Nuclear scan'], ['UDS', 'Urodynamics'], ['Histology', 'Histology'], ['Clinical', 'صورة سريرية'], ['Diagram', 'رسم توضيحي']] },
     gl: { label: 'الإرشادات', v: [['AUA', 'AUA Guideline'], ['EAU', 'EAU Guideline']] },
     explLen: { label: 'طول الشرح', v: [['short', 'قصير'], ['medium', 'متوسط'], ['long', 'طويل']] },
-    status: { label: 'الحالة', v: [['new', 'لم أحله'], ['wrong', 'في قائمة أخطائي'], ['due', 'مستحق للمراجعة'], ['everwrong', 'أخطأت فيه يومًا'], ['correct', 'آخر إجابة صحيحة'], ['starred', '⭐ محفوظ'], ['noted', '📝 عليه ملاحظة'], ['flagged', '🚩 معلَّم']] },
+    status: { label: 'الحالة', v: [['new', 'لم أحله'], ['wrong', 'في قائمة أخطائي'], ['due', 'مستحق للمراجعة'], ['everwrong', 'أخطأت فيه يومًا'], ['correct', 'آخر إجابة صحيحة'], ['starred', '⭐ محفوظ'], ['hero', '🦸 Hero'], ['noted', '📝 عليه ملاحظة'], ['flagged', '🚩 معلَّم']] },
     wc: { label: 'عدد مرات الخطأ', v: [['1', 'مرة'], ['2', 'مرتين'], ['3', '3 مرات فأكثر']] },
     last: { label: 'آخر محاولة', v: [['today', 'اليوم'], ['week', 'هذا الأسبوع'], ['old', 'أكثر من شهر'], ['never', 'لم أره أبدًا']] },
     diff: { label: 'الصعوبة (حسب إجاباتي)', v: [['easy', 'سهل'], ['medium', 'متوسط'], ['hard', 'صعب']] },
@@ -854,7 +889,7 @@ button.stat { width: 100%; }
   const DEFAULT_PREFS = {
     theme: 'light', fs: 1, explTab: 'sum', display: 'clean', shuffle: true, hideTags: false,
     sumOnly: false, askConf: true, boardN: 100, boardMin: 120, examSec: 72, sessN: 40,
-    sessMode: 'practice', showMistakeAns: false, timer: 'total', flow: 'step',
+    sessMode: 'practice', showMistakeAns: false, timer: 'total', flow: 'step', heroHide: true,
   };
 
   const S = (UB.S = {
@@ -938,7 +973,7 @@ button.stat { width: 100%; }
   };
 
   /* ---------- per-question state ---------- */
-  // state: {a:[[ts,key,ok,t,mode,sid,reason,conf]], s:1 star, n:'note', f:1 flag, o:{override}, r:1 reviewed, u:ms}
+  // state: {a:[[ts,key,ok,t,mode,sid,reason,conf]], s:1 star, h:1 hero, n:'note', f:1 flag, o:{override}, r:1 reviewed, u:ms}
   S.st = (qid) => S.docs[bucketOf(qid)].q[qid] || null;
   function ensure(qid) {
     const b = S.docs[bucketOf(qid)];
@@ -950,7 +985,14 @@ button.stat { width: 100%; }
     S.infoCache.delete(qid);
     touch(bucketOf(qid));
   }
-  S.addAttempt = (qid, at) => { const st = ensure(qid); st.a.push(at); changedQ(qid); };
+  // one wrong answer takes a question out of Hero
+  S.heroDropped = [];
+  S.addAttempt = (qid, at) => {
+    const st = ensure(qid);
+    st.a.push(at);
+    if (at[2] !== 1 && st.h) { delete st.h; S.heroDropped.push(qid); }
+    changedQ(qid);
+  };
   S.updateAttempt = (qid, ts, patch) => {
     const st = S.st(qid);
     if (!st) return;
@@ -962,6 +1004,9 @@ button.stat { width: 100%; }
     changedQ(qid);
   };
   S.setStar = (qid, v) => { const st = ensure(qid); if (v) st.s = 1; else delete st.s; changedQ(qid); };
+  S.setHero = (qid, v) => { const st = ensure(qid); if (v) st.h = 1; else delete st.h; changedQ(qid); };
+  // Hero questions are kept out of every session and review while the switch is on
+  S.hidden = (qid) => S.pref('heroHide') !== false && !!S.info(qid).hero;
   S.setFlag = (qid, v) => { const st = ensure(qid); if (v) st.f = 1; else delete st.f; changedQ(qid); };
   S.setNote = (qid, t) => { const st = ensure(qid); t = (t || '').trim(); if (t) st.n = t; else delete st.n; changedQ(qid); };
   S.setOverride = (qid, o) => {
@@ -1013,7 +1058,7 @@ button.stat { width: 100%; }
     const diff = !n ? null : wrong >= 2 || okRate < 0.5 ? 'hard' : wrong >= 1 ? 'medium' : 'easy';
     c = {
       n, wrong, streak, active, due, last, lastTs: last ? last[0] * 1000 : 0, lastOk: last ? last[2] === 1 : null,
-      star: !!(st && st.s), note: (st && st.n) || '', flag: !!(st && st.f), ov: (st && st.o) || null, rev: !!(st && st.r),
+      star: !!(st && st.s), hero: !!(st && st.h), note: (st && st.n) || '', flag: !!(st && st.f), ov: (st && st.o) || null, rev: !!(st && st.r),
       reasons, tAvg: n ? tSum / n : 0, okRate, diff, guesses, attempts: a,
     };
     S.infoCache.set(qid, c);
@@ -1520,9 +1565,20 @@ button.stat { width: 100%; }
     const file = new File([text], (meta.name || 'bank') + '.json', { type: 'application/json' });
     const r = await assets.upload(file, { type: 'application/json' });
     const entry = { id: 'u-' + r.id.slice(0, 12), asset: r.id, name: meta.name, count: meta.count, srcs: meta.srcs, at: Date.now(), size: r.sizeBytes };
+    if (meta.origin) entry.origin = meta.origin;
     S.docs.banks.list = (S.docs.banks.list || []).concat([entry]);
     touch('banks');
     return entry;
+  };
+  UB.bankText = async (ub) => {
+    const r = await fetch('/_blob/' + ub.asset);
+    if (!r.ok) throw new Error('missing');
+    return r.text();
+  };
+  S.shareFile = async function (text, filename) {
+    const dl = await S.cap('downloads');
+    if (!dl) return { ok: false, reason: 'unavailable' };
+    try { await dl.save({ filename, data: text }); return { ok: true }; } catch (e) { return { ok: false, reason: (e && e.code) || 'error' }; }
   };
   S.removeBank = async function (entry) {
     const assets = await S.cap('assets');
@@ -1553,7 +1609,30 @@ button.stat { width: 100%; }
     return base + src;
   }
 
-  function norm(r, base, bankId) {
+  // a reviewer's note saying that the answer key and the explanation disagree
+  // (exact with "flags": ["answer-conflict"]; for files without the flag the note's wording is read)
+  const KEY_RX = /\b(printed key|keyed (?:answer|option)|answer key|book keys|the key (?:is|was|letter)|key(?:ed)? (?:is|was) [A-E]\b)/i;
+  const EXPL_RX = /\bexplanation/i;
+  const DIS_RX = /(supports? (?:option|choice|answer)|which is (?:option|choice)|\boption [A-E]\b|\bchoice [A-E]\b|contradict|in conflict|conflicts? with|neither a listed option|does not (?:discuss|address|support|explain|mention)|without directly|disagree|mismatch)/i;
+  const AR_KEY = /(المفتاح|الجواب)[^.]{0,80}الشرح|الشرح[^.]{0,80}(المفتاح|الجواب)/;
+  const AR_DIS = /(يخالف|يناقض|لا يتطابق|لا يطابق|يختلف|يدعم الخيار|يشير إلى الخيار|تعارض)/;
+  function isConflictNote(t) {
+    t = String(t || '');
+    return (KEY_RX.test(t) && EXPL_RX.test(t) && DIS_RX.test(t)) ||
+      (/\bprinted key (?:is|on)\b/i.test(t) && EXPL_RX.test(t)) ||   // "The printed key is E. The explanation ..."
+      (AR_KEY.test(t) && AR_DIS.test(t));
+  }
+  B.isConflictNote = isConflictNote;
+  // the note to show beside a question under review
+  B.reviewNote = (q) => {
+    const refs = q.refs || [];
+    const plain = (r) => !/^printed answer and explanation begin/i.test(String(r));
+    return refs.find(isConflictNote) || refs.find((r) => /^(source review|reviewer note|review note)/i.test(String(r)) || /ملاحظة/.test(String(r))) ||
+      (q.conf < 1 || (q.flags || []).length ? refs.find(plain) : '') || '';
+  };
+
+  // flagged: the file marks conflicts with "flags" -- then only the flag counts, not the wording of notes
+  function norm(r, base, bankId, flagged) {
     if (!r || r.id == null || !r.stem || !Array.isArray(r.options)) return null;
     const L = 'ABCDEFGHIJ';
     const opts = r.options.map((o, i) => (typeof o === 'string' ? { k: L[i], t: o } : { k: o.k || L[i], t: o.t || o.text || '' }));
@@ -1568,7 +1647,8 @@ button.stat { width: 100%; }
       chT: (r.chapter && r.chapter.title) || '',
       num: r.num != null ? r.num : null, page: r.page != null ? r.page : null,
       stem: String(r.stem), opts, ans: r.answer || '', expl: r.explanation || '', sum: r.summary || '',
-      refs: r.refs || [],
+      refs: Array.isArray(r.refs) ? r.refs : r.refs ? [String(r.refs)] : [],
+      flags: Array.isArray(r.flags) ? r.flags.map(String) : [],
       imgs: (r.images || []).map((im) => ({ src: resolve(im.file || im.src, base), mod: im.modality || '', cap: im.caption || '', where: im.where === 'explanation' || im.where === 'expl' ? 'expl' : 'stem' })),
       c: { spec, topic, sub, tax2: (r.tax2 || []).filter((x) => UB.tx.get(x)), sex: r.sex || 'none', age: r.age != null ? +r.age : null, ag: r.ageGroup || null },
       organ: r.organ || [], special: r.special || [], qtype: r.qtype || '', fmt: r.format || '', gl: r.guideline || '',
@@ -1579,7 +1659,8 @@ button.stat { width: 100%; }
     q.explW = U.words(q.expl);
     q.explLen = q.explW < 80 ? 'short' : q.explW <= 200 ? 'medium' : 'long';
     const ansOk = q.opts.some((o) => o.k === q.ans);
-    q.status = !ansOk || !q.expl ? 'incomplete' : q.conf < 0.75 || r.status === 'review' || !spec ? 'review' : 'ok';
+    q.conflict = q.flags.includes('answer-conflict') || (!flagged && q.refs.some(isConflictNote));
+    q.status = !ansOk || !q.expl ? 'incomplete' : q.conf < 0.75 || r.status === 'review' || !spec || q.conflict ? 'review' : 'ok';
     q.order = [q.src, U.pad(q.year != null ? q.year : 0, 4), U.pad(q.ch != null ? q.ch : 0, 4), U.pad(+q.num || 0, 5), q.id].join('|');
     return q;
   }
@@ -1619,8 +1700,9 @@ button.stat { width: 100%; }
     }
     const base = meta.base || '';
     let count = 0;
+    const flagged = json.questions.some((r) => r && Array.isArray(r.flags));
     for (const raw of json.questions) {
-      const q = norm(withAddon(raw), base, meta.id);
+      const q = norm(withAddon(raw), base, meta.id, flagged);
       if (!q) continue;
       if (B.byId[q.id]) continue;
       B.byId[q.id] = q;
@@ -1709,9 +1791,15 @@ button.stat { width: 100%; }
   B.src = (q) => B.sources[q.src] || { id: q.src, name: q.src, full: q.src, kind: 'none', color: '#5A6B78' };
   B.srcLabel = (q) => {
     const s = B.src(q);
-    if (s.kind === 'year' && q.year != null) return s.name + ' ' + q.year;
-    if (s.kind === 'chapter' && q.ch != null) return s.name + ' · Ch.' + q.ch;
-    return s.name;
+    const n = q.num != null && q.num !== '' ? ' · Q' + q.num : '';
+    if (s.kind === 'year' && q.year != null) return s.name + ' ' + q.year + n;
+    if (s.kind === 'chapter' && q.ch != null) return s.name + ' · Ch.' + q.ch + n;
+    return s.name + n;
+  };
+  // how many questions of one source fall in each of its years or chapters, given the other filters
+  B.srcParts = function (src) {
+    const s = B.sources[src];
+    return s && s.kind === 'year' ? 'year' : s && s.kind === 'chapter' ? 'ch' : null;
   };
   B.optText = (q, k) => {
     const o = q.opts.find((x) => x.k === k);
@@ -2449,7 +2537,7 @@ button.stat { width: 100%; }
 
   F.FACETS = ['src', 'tax', 'organ', 'sex', 'ag', 'special', 'qtype', 'fmt', 'img', 'mod', 'gl', 'explLen', 'status', 'wc', 'last', 'diff', 'reason'];
 
-  F.blank = () => ({ inc: {}, exc: {}, yr: {}, chs: {}, wMin: null, wMax: null, waMax: null, aMin: null, aMax: null, hy: false, nodup: false, slow: false, q: '', sort: 'random' });
+  F.blank = () => ({ inc: {}, exc: {}, yr: {}, ys: {}, chs: {}, wMin: null, wMax: null, waMax: null, aMin: null, aMax: null, hy: false, nodup: false, slow: false, q: '', sort: 'random' });
   F.norm = (f) => Object.assign(F.blank(), U.clone(f || {}));
 
   function statusVals(q) {
@@ -2461,6 +2549,7 @@ button.stat { width: 100%; }
     if (i.wrong) v.push('everwrong');
     if (i.n && i.lastOk) v.push('correct');
     if (i.star) v.push('starred');
+    if (i.hero) v.push('hero');
     if (i.note) v.push('noted');
     if (i.flag) v.push('flagged');
     return v;
@@ -2500,11 +2589,12 @@ button.stat { width: 100%; }
     const inc = [], exc = [];
     for (const k in f.inc || {}) if (f.inc[k] && f.inc[k].length && FV[k]) inc.push([k, new Set(f.inc[k])]);
     for (const k in f.exc || {}) if (f.exc[k] && f.exc[k].length && FV[k]) exc.push([k, new Set(f.exc[k])]);
-    const chs = {};
+    const chs = {}, ys = {};
     for (const k in f.chs || {}) if (f.chs[k] && f.chs[k].length) chs[k] = new Set(f.chs[k].map(Number));
+    for (const k in f.ys || {}) if (f.ys[k] && f.ys[k].length) ys[k] = new Set(f.ys[k].map(Number));
     const num = (v) => (v === null || v === undefined || v === '' || isNaN(+v) ? null : +v);
     return {
-      inc, exc, chs, yr: f.yr || {},
+      inc, exc, chs, ys, yr: f.yr || {},
       wMin: num(f.wMin), wMax: num(f.wMax), waMax: num(f.waMax), aMin: num(f.aMin), aMax: num(f.aMax),
       hy: !!f.hy, slow: !!f.slow, nodup: !!f.nodup, q: (f.q || '').trim().toLowerCase(),
       slowT: f.slow ? UB.S.avgTime() * 1.5 : 0,
@@ -2532,6 +2622,8 @@ button.stat { width: 100%; }
       }
       const cs = c.chs[q.src];
       if (cs && cs.size && !cs.has(q.ch)) return false;
+      const yy = c.ys[q.src];
+      if (yy && yy.size && !yy.has(q.year)) return false;
     }
     if (c.wMax != null && q.words > c.wMax) return false;
     if (c.wMin != null && q.words < c.wMin) return false;
@@ -2564,9 +2656,12 @@ button.stat { width: 100%; }
     return out;
   }
 
+  // Hero questions stay out of results while hidden, unless the filter asks for them
+  const wantsHero = (f) => !!(f && f.inc && (f.inc.status || []).includes('hero'));
   F.run = function (f) {
     const c = compile(f || F.blank());
-    let out = UB.B.list.filter((q) => UB.B.usable(q) && match(q, c));
+    const hero = wantsHero(f);
+    let out = UB.B.list.filter((q) => UB.B.usable(q) && match(q, c) && (hero || !UB.S.hidden(q.id)));
     if (c.nodup) out = dedupe(out);
     return out;
   };
@@ -2575,9 +2670,10 @@ button.stat { width: 100%; }
   // counts for every value of one facet, given all other filters
   F.facetCounts = function (f, fac, cc) {
     const c = cc || compile(f);
+    const hero = fac === 'status' || wantsHero(f);
     const m = new Map();
     for (const q of UB.B.list) {
-      if (!UB.B.usable(q) || !match(q, c, fac)) continue;
+      if (!UB.B.usable(q) || !match(q, c, fac) || (!hero && UB.S.hidden(q.id))) continue;
       for (const v of new Set(FV[fac](q))) m.set(v, (m.get(v) || 0) + 1);
     }
     return m;
@@ -2605,9 +2701,27 @@ button.stat { width: 100%; }
   };
   F.SORTS = [['random', 'عشوائي'], ['book', 'حسب ترتيب الكتاب'], ['hard', 'الأصعب أولًا'], ['old', 'الأقدم مراجعة أولًا'], ['short', 'الأقصر أولًا']];
 
-  /* tri-state */
+  // how many questions of one source fall in each of its years or chapters, given the other filters
+  F.partCounts = function (f, src) {
+    const kind = UB.B.srcParts(src);
+    const g = F.norm(f);
+    g.inc.src = [src];
+    if (g.exc.src) g.exc.src = g.exc.src.filter((x) => x !== src);
+    delete g.ys[src]; delete g.chs[src]; delete g.yr[src];
+    const c = compile(g);
+    const hero = wantsHero(g);
+    const m = new Map();
+    for (const q of UB.B.list) {
+      if (q.src !== src || !UB.B.usable(q) || !match(q, c) || (!hero && UB.S.hidden(q.id))) continue;
+      const k = kind === 'year' ? q.year : q.ch;
+      if (k != null) m.set(k, (m.get(k) || 0) + 1);
+    }
+    return m;
+  };
+
+  /* chips: one tap selects, a second tap clears (exclusions from older saved filters still work and can be removed) */
   F.state = (f, fac, v) => ((f.inc[fac] || []).includes(v) ? 'inc' : (f.exc[fac] || []).includes(v) ? 'exc' : null);
-  F.toggle = function (f, fac, v, allowExc = true) {
+  F.toggle = function (f, fac, v, allowExc = false) {
     const st = F.state(f, fac, v);
     const rm = (arr) => (arr || []).filter((x) => x !== v);
     f.inc[fac] = rm(f.inc[fac]);
@@ -2644,6 +2758,12 @@ button.stat { width: 100%; }
       const name = UB.B.sources[s] ? UB.B.sources[s].name : s;
       out.push({ fac: 'chs', v: s, kind: 'num', label: name + ': ' + (a.length === 1 ? 'Ch.' + a[0] : U.ar(a.length, ['فصل', 'فصلان', 'فصول', 'فصلًا', 'فصل'])) });
     }
+    for (const s in f.ys || {}) {
+      const a = f.ys[s];
+      if (!a || !a.length) continue;
+      const name = UB.B.sources[s] ? UB.B.sources[s].name : s;
+      out.push({ fac: 'ys', v: s, kind: 'num', label: name + ' ' + (a.length <= 3 ? a.join('، ') : U.ar(a.length, ['سنة', 'سنتان', 'سنوات', 'سنة', 'سنة'])) });
+    }
     const has = (x) => x !== null && x !== undefined && x !== '';
     if (has(f.wMin) && has(f.wMax)) out.push({ fac: 'w', kind: 'num', label: f.wMin + '–' + f.wMax + ' كلمة' });
     else if (has(f.wMax)) out.push({ fac: 'w', kind: 'num', label: 'حتى ' + f.wMax + ' ' + (f.wMax >= 3 && f.wMax <= 10 ? 'كلمات' : 'كلمة') });
@@ -2661,6 +2781,7 @@ button.stat { width: 100%; }
     else if (d.kind === 'exc') f.exc[d.fac] = (f.exc[d.fac] || []).filter((x) => x !== d.v);
     else if (d.fac === 'yr') delete f.yr[d.v];
     else if (d.fac === 'chs') delete f.chs[d.v];
+    else if (d.fac === 'ys') delete f.ys[d.v];
     else if (d.fac === 'w') { f.wMin = null; f.wMax = null; }
     else if (d.fac === 'wa') f.waMax = null;
     else if (d.fac === 'age') { f.aMin = null; f.aMax = null; }
@@ -2714,13 +2835,15 @@ button.stat { width: 100%; }
     edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/>',
     note: '<path d="M5 3h10l4 4v14H5z"/><path d="M9 12h6M9 16h4"/>',
     flag: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+    hero: '<path d="M12 3 4.5 6v5.6c0 4.5 3.2 8.3 7.5 9.4 4.3-1.1 7.5-4.9 7.5-9.4V6z"/><path d="m8.8 12.2 2.2 2.2 4.3-4.4"/>',
+    cplan: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h3M8 17h6"/>',
   };
   ui.icon = (n, sw = 2) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[n] || '') + '</svg>';
 
   const NAV = [
-    ['home', 'الرئيسية', 'home'], ['plan', 'خطة اليوم', 'plan'], ['bank', 'بنك الأسئلة', 'bank'],
+    ['home', 'الرئيسية', 'home'], ['plan', 'خطة اليوم', 'plan'], ['cplan', 'خطة خاصة', 'cplan'], ['bank', 'بنك الأسئلة', 'bank'],
     ['filter', 'الفلترة والامتحان', 'filter'], ['mistakes', 'مراجعة الأخطاء', 'mistakes'], ['starred', 'المحفوظة', 'star'],
-    ['topics', 'ملخص المواضيع', 'topics'], ['stats', 'الإحصائيات', 'stats'],
+    ['hero', 'Hero 🦸', 'hero'], ['stats', 'الإحصائيات', 'stats'],
   ];
   const NAV2 = [['library', 'المصادر والاستيراد', 'library'], ['prefs', 'الإعدادات والنسخ', 'prefs']];
   const BNAV = [['home', 'الرئيسية', 'home'], ['filter', 'الفلترة', 'filter'], ['mistakes', 'الأخطاء', 'mistakes'], ['stats', 'الإحصائيات', 'stats'], ['more', 'المزيد', 'more']];
@@ -2734,7 +2857,7 @@ button.stat { width: 100%; }
   /* ---------- navigation ---------- */
   ui.counts = function () {
     let mistakes = 0;
-    for (const q of UB.B.list) if (UB.B.usable(q) && S.info(q.id).active) mistakes++;
+    for (const q of UB.B.list) if (UB.B.usable(q) && S.info(q.id).active && !S.hidden(q.id)) mistakes++;
     return { mistakes };
   };
   function syncText() {
@@ -2962,6 +3085,7 @@ button.stat { width: 100%; }
     if (i.wrong) badges.push('<span class="mini bad">✕ ' + i.wrong + '</span>');
     else if (i.n) badges.push('<span class="mini ok">✓</span>');
     if (i.star) badges.push('<span class="mini">⭐</span>');
+    if (i.hero) badges.push('<span class="mini ok">🦸 Hero</span>');
     return '<button class="list-row" ' + (attrs || '') + '>' + ui.dot(e.spec, 30) + '<div class="grow"><div class="qs en">' + U.esc(q.stem) + '</div><div class="m">' + badges.join('') + '</div>' + (extra || '') + '</div></button>';
   };
 
@@ -3011,7 +3135,7 @@ button.stat { width: 100%; }
     S.on('sync', ui.updateSync);
   };
   ui.moreMenu = function () {
-    const items = [['plan', 'خطة اليوم', 'plan'], ['bank', 'بنك الأسئلة', 'bank'], ['starred', 'المحفوظة', 'star'], ['topics', 'ملخص المواضيع', 'topics'], ['library', 'المصادر والاستيراد', 'library'], ['prefs', 'الإعدادات والنسخ الاحتياطي', 'prefs']];
+    const items = [['plan', 'خطة اليوم', 'plan'], ['bank', 'بنك الأسئلة', 'bank'], ['cplan', 'خطة خاصة', 'cplan'], ['starred', 'المحفوظة', 'star'], ['hero', 'Hero 🦸', 'hero'], ['library', 'المصادر والاستيراد', 'library'], ['prefs', 'الإعدادات والنسخ الاحتياطي', 'prefs']];
     ui.sheet({
       cls: 'sm',
       html: sh('المزيد') + '<div class="card">' + items.map(([id, l, ic]) => '<button class="ni" data-a="go" data-v="' + id + '" style="border-radius:0">' + ui.icon(ic) + '<span>' + l + '</span></button>').join('') + '</div>',
@@ -3031,13 +3155,17 @@ button.stat { width: 100%; }
   const MAXQ = 400;
   SE.MAXQ = MAXQ;
 
+  // Hero questions stay out of sessions while hidden (a session started from the Hero page keeps them)
+  UB.visible = (ids, o) => (o && o.hero ? ids : ids.filter((id) => !S.hidden(id)));
   SE.create = function (o) {
-    const qids = o.qids.slice(0, MAXQ);
+    const vis = UB.visible(o.qids, o);
+    const qids = (vis.length ? vis : o.qids).slice(0, MAXQ);
     const s = {
       id: 's' + U.uid(8), kind: o.kind || 'practice', title: o.title || '', created: Date.now(), qids, i: 0,
       disp: o.disp || 'clean', shuf: !!o.shuf, hideTags: !!o.hideTags, sumOnly: !!o.sumOnly, flow: o.flow || S.pref('flow') || 'step',
       timer: o.timer && o.timer.kind !== 'none' ? { kind: 'total', sec: Math.max(60, Math.round(o.timer.sec)) } : { kind: 'none' },
       elapsed: 0, ans: {}, flags: {}, strike: {}, guess: {}, qt: {}, done: false, src: o.src || null,
+      hero: !!o.hero, plan: o.plan || null,
     };
     S.setSession(s);
     return s;
@@ -3182,8 +3310,8 @@ button.stat { width: 100%; }
   /* ---------- start dialog ---------- */
   function hasHistory(qids) { for (const id of qids) if (S.info(id).n) return true; return false; }
   UB.startSheet = function (o) {
-    const qids = o.qids || [];
-    if (!qids.length) { ui.toast('لا توجد أسئلة مطابقة الآن', 'bad'); return; }
+    const qids = UB.visible(o.qids || [], o);
+    if (!qids.length) { ui.toast((o.qids || []).length ? 'كل هذه الأسئلة في Hero، وهي مخفية من الجلسات الآن' : 'لا توجد أسئلة مطابقة الآن', 'bad'); return; }
     const total = qids.length;
     const kind0 = o.kind || S.pref('sessMode') || 'practice';
     const st = {
@@ -3272,7 +3400,7 @@ button.stat { width: 100%; }
         if (st.mode === 'practice') p.sessN = st.n;
       }
       S.touch('meta', true);
-      SE.create({ kind, title: o.title, qids: ids, disp: st.disp, shuf: st.shuf, hideTags: st.hideTags, sumOnly: st.sumOnly && kind !== 'exam', timer, src: o.src || null, flow: st.flow });
+      SE.create({ kind, title: o.title, qids: ids, disp: st.disp, shuf: st.shuf, hideTags: st.hideTags, sumOnly: st.sumOnly && kind !== 'exam', timer, src: o.src || null, flow: st.flow, hero: o.hero, plan: o.plan || null });
       ui.params = {};
       ui.go('study');
     }
@@ -3291,9 +3419,11 @@ button.stat { width: 100%; }
     if (!list.length) { ui.toast('لا توجد أسئلة مطابقة لهذا الفلتر الآن', 'bad'); return; }
     UB.startSheet({ qids: list.map((q) => q.id), title: p.name, kind: p.mode || 'practice', src: { label: p.name, f } });
   };
-  UB.startList = function (qids, title, kind, startAt) {
+  UB.startList = function (qids, title, kind, startAt, opt) {
+    opt = opt || {};
     if (!qids.length) return;
-    const s = SE.create({ kind: kind || 'practice', title, qids, disp: S.pref('display'), shuf: S.pref('shuffle'), hideTags: S.pref('hideTags'), sumOnly: S.pref('sumOnly'), timer: { kind: 'none' }, flow: S.pref('flow') });
+    if (!UB.visible(qids, opt).length) { ui.toast('هذا السؤال في Hero، وأسئلة Hero مخفية من الجلسات الآن', 'bad'); return; }
+    const s = SE.create({ kind: kind || 'practice', title, qids, hero: opt.hero, plan: opt.plan || null, disp: S.pref('display'), shuf: S.pref('shuffle'), hideTags: S.pref('hideTags'), sumOnly: S.pref('sumOnly'), timer: { kind: 'none' }, flow: S.pref('flow') });
     s.i = U.clamp(startAt || 0, 0, s.qids.length - 1);
     SE.save(s);
     ui.params = {};
@@ -3340,17 +3470,25 @@ button.stat { width: 100%; }
     return '<div class="qtags">' + t.join('') + '</div>';
   }
 
-  function priorBadges(s, q, revealed) {
-    if (revealed || s.disp === 'clean' || !SE.live(s)) return '';
+  const showPrev = (s, q) => s.disp === 'full' || !!(ui.st.showPrev && ui.st.showPrev[q.id]);
+  function priorBadges(s, q, revealed, qi) {
+    if (revealed || !SE.live(s)) return '';
     const p = priorOf(s, q);
     if (!p.length) return '';
     const wrong = p.filter((x) => x[2] !== 1).length;
     const last = p[p.length - 1];
     const b = [];
-    if (wrong) b.push('<span class="tag bad">⚠ أخطأت فيه ' + U.nTimes(wrong) + '</span>');
-    else b.push('<span class="tag ok">✓ أجبته صحيحًا ' + U.nTimes(p.length) + '</span>');
-    b.push('<span class="tag">آخر مرة: ' + U.rel(last[0] * 1000) + '</span>');
-    return '<div class="prior">' + b.join('') + '</div>';
+    if (s.disp !== 'clean') {
+      if (wrong) b.push('<span class="tag bad">⚠ أخطأت فيه ' + U.nTimes(wrong) + '</span>');
+      else b.push('<span class="tag ok">✓ أجبته صحيحًا ' + U.nTimes(p.length) + '</span>');
+      b.push('<span class="tag">آخر مرة: ' + U.rel(last[0] * 1000) + '</span>');
+    }
+    // one tap shows the option I chose before (without showing the right one)
+    if (wrong && s.disp !== 'full') {
+      const on = showPrev(s, q);
+      b.push('<button class="chip' + (on ? ' inc' : '') + '" data-a="prevans"' + (qi != null ? ' data-qi="' + qi + '"' : '') + '>👁 ' + (on ? 'إخفاء جوابي السابق' : 'جوابي السابق') + '</button>');
+    }
+    return b.length ? '<div class="prior">' + b.join('') + '</div>' : '';
   }
 
   // qi: the question's place in the session (scroll mode: each card carries its own buttons)
@@ -3362,7 +3500,7 @@ button.stat { width: 100%; }
     const a = s.ans[q.id];
     const order = SE.order(s, q);
     const prevWrong = {};
-    if (!revealed && s.disp === 'full' && SE.live(s)) for (const x of priorOf(s, q)) if (x[2] !== 1) prevWrong[x[1]] = (prevWrong[x[1]] || 0) + 1;
+    if (!revealed && showPrev(s, q) && SE.live(s)) for (const x of priorOf(s, q)) if (x[2] !== 1) prevWrong[x[1]] = (prevWrong[x[1]] || 0) + 1;
     const struck = s.strike[q.id] || [];
     return '<div class="opts en">' + order.map((k, idx) => {
       const o = q.opts.find((x) => x.k === k) || { t: '' };
@@ -3373,7 +3511,7 @@ button.stat { width: 100%; }
         else if (a && a.k === k) { cls += ' bad'; mk = 'إجابتك ✕'; mkc = 'bad'; }
       } else {
         if (a && a.k === k) cls += ' picked';
-        else if (prevWrong[k]) { cls += ' prevbad'; mk = 'اخترته ' + U.nTimes(prevWrong[k]) + ' ✕'; mkc = 'bad'; }
+        else if (prevWrong[k]) { cls += ' prevbad'; mk = 'جوابي السابق · ' + U.nTimes(prevWrong[k]) + ' ✕'; mkc = 'bad'; }
         if (struck.includes(k)) cls += ' struck';
       }
       return '<button class="' + cls + '" data-a="opt" data-k="' + esc(k) + '"' + qa + '><span class="k">' + L[idx] + '</span><span class="t">' + esc(o.t) + '</span>' +
@@ -3447,7 +3585,9 @@ button.stat { width: 100%; }
           }).join('') + '</div>';
       }
     }
-    return verdict + seg + body + sim;
+    const cnote = q.conflict ? B.reviewNote(q) : '';
+    const warn = q.conflict ? '<div class="cwarn">⚠️ <b>انتبه: ملف هذا السؤال يقول إن الجواب في المفتاح لا يتطابق مع الشرح.</b>' + (cnote ? '<div class="en">' + esc(cnote) + '</div>' : '') + '</div>' : '';
+    return verdict + warn + seg + body + sim;
   }
 
   V.study = {
@@ -3503,6 +3643,7 @@ button.stat { width: 100%; }
       const foot = '<footer class="qfoot">' +
         '<button class="btn g" data-a="prev"' + (s.i === 0 ? ' disabled' : '') + '>‹ السابق</button>' +
         '<button class="ib' + (inf.star ? ' on' : '') + '" data-a="star" title="حفظ ⭐" aria-label="حفظ">⭐</button>' +
+        '<button class="ib' + (inf.hero ? ' on' : '') + '" data-a="hero" title="Hero: مستحيل أن أخطئ فيه" aria-label="Hero">🦸</button>' +
         '<button class="ib' + (inf.note ? ' on' : '') + '" data-a="note" title="ملاحظتي" aria-label="ملاحظة">📝</button>' +
         '<button class="ib' + (flagOn ? ' on' : '') + '" data-a="flag" title="' + (exam && live ? 'علّمه للرجوع إليه قبل التسليم' : 'معلَّم للرجوع إليه') + '" aria-label="تعليم">🚩</button>' +
         '<button class="ib" data-a="edit" title="تعديل التصنيف / إبلاغ عن خطأ" aria-label="تعديل">' + ui.icon('edit') + '</button>' +
@@ -3537,6 +3678,7 @@ button.stat { width: 100%; }
       ui.st.shown = 0;
       ui.st.tabs = {};
       ui.st.opened = null;
+      ui.st.showPrev = {};
     },
     act(a, el) {
       const s = SE.cur();
@@ -3555,6 +3697,7 @@ button.stat { width: 100%; }
           if (!q || !SE.live(s)) return;
           if (!SE.isExam(s) && s.ans[q.id]) return;
           SE.answer(s, q, el.dataset.k);
+          heroNotice();
           ui.refresh();
           if (!SE.isExam(s) && !scroll) {
             const ec = document.querySelector('.ecol');
@@ -3582,6 +3725,13 @@ button.stat { width: 100%; }
         case 'prev': if (scroll) { goCard(s, s.i - 1); return; } if (s.i > 0) { s.i--; SE.save(s); ui.render(true); } return;
         case 'more': ui.st.shown = (ui.st.shown || 25) + 25; ui.refresh(); return;
         case 'finish': finishSession(s); return;
+        case 'hero': if (q) {
+          const v = !S.info(q.id).hero;
+          S.setHero(q.id, v);
+          ui.toast(v ? '🦸 أُضيف إلى Hero' + (S.pref('heroHide') !== false ? ' — لن يظهر في الجلسات والمراجعات القادمة' : '') : 'أُخرج من Hero', v ? 'ok' : '', 3200);
+          ui.refresh();
+        } return;
+        case 'prevans': if (q) { const m = (ui.st.showPrev = ui.st.showPrev || {}); m[q.id] = !m[q.id]; ui.refresh(); } return;
         case 'star': if (q) { const v = !S.info(q.id).star; S.setStar(q.id, v); ui.toast(v ? '⭐ حُفظ السؤال' : 'أُزيل من المحفوظة'); ui.refresh(); } return;
         case 'flag':
           if (!q) return;
@@ -3688,13 +3838,14 @@ button.stat { width: 100%; }
     const locked = SE.locked(s);
     const tools = '<div class="qtools">' +
       '<button class="ib' + (inf.star ? ' on' : '') + '" data-a="star"' + qa + ' title="حفظ ⭐" aria-label="حفظ">⭐</button>' +
+      '<button class="ib' + (inf.hero ? ' on' : '') + '" data-a="hero"' + qa + ' title="Hero: مستحيل أن أخطئ فيه" aria-label="Hero">🦸</button>' +
       '<button class="ib' + (inf.note ? ' on' : '') + '" data-a="note"' + qa + ' title="ملاحظتي" aria-label="ملاحظة">📝</button>' +
       '<button class="ib' + (flagOn ? ' on' : '') + '" data-a="flag"' + qa + ' title="تعليم" aria-label="تعليم">🚩</button>' +
       '<button class="ib" data-a="hist"' + qa + (locked ? ' style="opacity:.45"' : '') + ' title="سجلي" aria-label="سجلي">🕘</button>' +
       '<button class="ib" data-a="edit"' + qa + ' title="تعديل التصنيف / إبلاغ عن خطأ" aria-label="تعديل">' + ui.icon('edit') + '</button></div>';
     return '<article class="qcard' + (revealed ? ' done' : '') + (a && !revealed ? ' picked' : '') + '" id="qc' + i + '" data-qi="' + i + '">' +
       '<div class="qcard-h"><span class="qn ens">Q ' + (i + 1) + '</span>' + tools + '</div>' +
-      tagsHtml(s, q) + priorBadges(s, q, revealed) +
+      tagsHtml(s, q) + priorBadges(s, q, revealed, i) +
       '<div class="qtext en">' + esc(q.stem) + '</div>' + imgsHtml(q, 'stem') + optionsHtml(s, q, revealed, i) +
       (!revealed && live && S.pref('askConf') ? '<div class="guess"><button class="chip' + (s.guess[q.id] ? ' inc' : '') + '" data-a="guess"' + qa + '>🤔 أخمّن</button><span>علّمها إن لم تكن متأكدًا</span></div>' : '') +
       (exam && live && a ? '<div class="note" style="margin-top:10px">حُفظت إجابتك · تستطيع تغييرها حتى التسليم</div>' : '') +
@@ -3774,6 +3925,13 @@ button.stat { width: 100%; }
     const r = SE.submit(s);
     ui.st.qid = null;
     ui.go('results', { id: r.id });
+    heroNotice();
+  }
+  function heroNotice() {
+    const n = (S.heroDropped || []).length;
+    if (!n) return;
+    S.heroDropped = [];
+    ui.toast(n === 1 ? '🦸 خرج هذا السؤال من Hero لأنك أخطأت فيه' : '🦸 خرج ' + U.nQ(n) + ' من Hero لأنك أخطأت فيها', 'bad', 3800);
   }
 
   function gridSheet(s) {
@@ -4005,10 +4163,11 @@ button.stat { width: 100%; }
   UB.agg = function () {
     if (UB._agg && UB._agg.v === S.ver + ':' + B.ver) return UB._agg;
     const spec = {}, sub = {};
-    let total = 0, answered = 0, att = 0, okAtt = 0, active = 0, starred = 0, tSum = 0, reviewN = 0;
+    let total = 0, answered = 0, att = 0, okAtt = 0, active = 0, starred = 0, tSum = 0, reviewN = 0, conflictN = 0, heroN = 0, week = 0;
     const days = new Set();
     let today = 0;
     const t0 = U.dayStart();
+    const w0 = t0 - 6 * 864e5;
     for (const q of B.list) {
       if (!B.usable(q)) continue;
       total++;
@@ -4021,9 +4180,10 @@ button.stat { width: 100%; }
       const su = sub[key] || (sub[key] = { n: 0, ans: 0, att: 0, ok: 0, qids: [] });
       su.n++;
       su.qids.push(q.id);
-      if (B.status(q) === 'review') reviewN++;
+      if (B.status(q) === 'review') { reviewN++; if (q.conflict) conflictN++; }
       if (i.star) starred++;
-      if (i.active) active++;
+      if (i.hero) heroN++;
+      if (i.active && !S.hidden(q.id)) active++;
       if (!i.n) continue;
       answered++; so.ans++; su.ans++;
       for (const x of i.attempts) {
@@ -4033,13 +4193,14 @@ button.stat { width: 100%; }
         const ms = x[0] * 1000;
         days.add(U.dayKey(ms));
         if (ms >= t0) today++;
+        if (ms >= w0) week++;
       }
     }
     let streak = 0;
     let d = Date.now();
     if (!days.has(U.dayKey(d))) d -= 864e5;
     while (days.has(U.dayKey(d))) { streak++; d -= 864e5; }
-    UB._agg = { v: S.ver + ':' + B.ver, spec, sub, total, answered, att, okAtt, acc: att ? U.pct(okAtt, att) : null, active, starred, tAvg: att ? tSum / att : 0, today, streak, reviewN };
+    UB._agg = { v: S.ver + ':' + B.ver, spec, sub, total, answered, att, okAtt, acc: att ? U.pct(okAtt, att) : null, active, starred, tAvg: att ? tSum / att : 0, today, streak, reviewN, conflictN, heroN, week };
     return UB._agg;
   };
   UB.weak = function (min = 2, n = 5) {
@@ -4049,13 +4210,23 @@ button.stat { width: 100%; }
   };
   UB.loadFilter = function (f) { ui.st.f = F.norm(f); try { localStorage.setItem('ub1:fdraft', JSON.stringify(ui.st.f)); } catch (e) {} ui.go('filter'); };
 
-  function presetCard(p, builtin) {
-    const f = F.norm(p.f);
-    const n = F.count(f);
-    const desc = builtin ? p.desc : F.describe(f).map((d) => d.label).join(' · ') || 'كل الأسئلة';
-    return '<div class="pc"><b>' + esc(p.name) + '</b><div class="d">' + esc(desc) + '</div><div class="f"><span>' + U.nQ(n) + '</span>' +
-      '<div class="row" style="gap:6px"><button class="btn g sm" data-a="pedit" data-id="' + esc(p.id) + '" style="height:34px;padding:0 10px">فلترة</button>' +
-      '<button class="play" data-a="pplay" data-id="' + esc(p.id) + '" aria-label="ابدأ"' + (n ? '' : ' disabled style="opacity:.4"') + '>▶</button></div></div></div>';
+  // brief numbers on the home page: Hero, today's part of my own plan, days to the exam, the last 7 days
+  function quickStats(a, plan) {
+    const cp = UB.cplanToday ? UB.cplanToday() : null;
+    let cpB, cpL;
+    if (!cp) { cpB = '＋'; cpL = 'أنشئ خطة خاصة'; }
+    else if (cp.total && cp.done >= cp.total) { cpB = '🎉'; cpL = 'أكملت «' + esc(cp.name) + '»'; }
+    else if (cp.remaining) { cpB = U.num(cp.remaining); cpL = 'حصة اليوم · ' + esc(cp.name); }
+    else { cpB = '✓'; cpL = 'أنجزت حصة اليوم · ' + esc(cp.name); }
+    const dl = plan.exam ? U.daysBetween(Date.now(), U.parseDay(plan.exam)) : null;
+    const exB = dl == null || dl < 0 ? '—' : dl === 0 ? 'اليوم' : U.num(dl);
+    const exL = dl == null || dl < 0 ? 'حدّد تاريخ الامتحان' : dl === 0 ? 'الامتحان — بالتوفيق!' : 'يومًا باقية على الامتحان';
+    return '<div class="qstats"><div class="sec"><h3>نظرة سريعة</h3></div><div class="stats">' +
+      '<button class="stat" data-a="go" data-v="hero"><b>' + U.num(a.heroN) + '</b><span>🦸 Hero' + (a.heroN && S.pref('heroHide') !== false ? ' · مخفية' : '') + '</span></button>' +
+      '<button class="stat" data-a="go" data-v="cplan"><b>' + cpB + '</b><span>' + cpL + '</span></button>' +
+      '<button class="stat" data-a="go" data-v="plan"><b>' + exB + '</b><span>' + exL + '</span></button>' +
+      '<button class="stat" data-a="go" data-v="stats"><b>' + U.num(a.week) + '</b><span>إجابة في آخر 7 أيام</span></button>' +
+      '</div></div>';
   }
 
   V.home = {
@@ -4098,9 +4269,6 @@ button.stat { width: 100%; }
       const pl = UB.planToday ? UB.planToday() : null;
       const planCard = pl ? '<button class="card planc" data-a="go" data-v="plan" style="width:100%;text-align:start"><div class="ring">' + ui.ring(pl.goal ? U.pct(pl.doneNew + pl.doneRev, pl.goal + pl.due) : 0) + '<b>' + (pl.doneNew + pl.doneRev) + '</b></div>' +
         '<div class="grow"><b style="font-size:15.5px">خطة اليوم</b><div class="note">' + (plan.exam ? 'هدف اليوم: ' + U.nQ(pl.goal) + ' جديدة + ' + U.nQ(pl.due) + ' للمراجعة' : 'حدد تاريخ امتحانك ليقسّم البرنامج الأسئلة على الأيام') + '</div></div><span class="btn p sm">' + (plan.exam ? 'ابدأ ›' : 'إعداد ›') + '</span></button>' : '';
-      // presets
-      const saved = S.saved();
-      const presets = saved.map((p) => presetCard(p, false)).join('') + F.PRESETS.map((p) => presetCard(p, true)).join('');
       // specialties
       const specRows = UB.tx.specs.filter((sp) => a.spec[sp.id]).map((sp) => {
         const o = a.spec[sp.id];
@@ -4126,17 +4294,18 @@ button.stat { width: 100%; }
         '<button class="stat" data-a="go" data-v="mistakes"><b style="color:var(--bad)">' + a.active + '</b><span>أخطاء للمراجعة</span></button>' +
         '<button class="stat" data-a="go" data-v="starred"><b>' + a.starred + '</b><span>محفوظة ⭐</span></button>' +
         '<div class="stat"><b>' + (a.att ? Math.round(a.tAvg) + '<span style="font-size:14px">s</span>' : '—') + '</b><span>متوسط وقت السؤال</span></div></div>' +
-        sessCard + planCard +
-        '<div><div class="sec"><h3>ابدأ بلمسة</h3><button class="lnk" data-a="go" data-v="filter">+ فلتر جديد</button></div><div class="pgrid">' + presets + '</div></div>' +
+        sessCard + planCard + quickStats(a, plan) +
         '</div><div class="hcol">' +
         '<div class="card"><div class="sec" style="padding:14px 16px 4px;margin:0"><h3>التخصصات</h3><span class="note">الشريط: الإنجاز · الرقم: نسبة الصحيح</span></div>' + specRows + '</div>' +
         '<div class="card pad"><div class="sec"><h3>نقاط الضعف</h3><button class="lnk" data-a="go" data-v="stats">الإحصائيات ›</button></div>' + weakHtml + '</div>' +
+        (a.conflictN ? '<button class="card planc" data-a="conflicts" style="width:100%;text-align:start;border-color:var(--badline)"><span style="font-size:26px">⚠️</span><div class="grow"><b>الجواب يخالف الشرح</b><div class="note">' + U.nQ(a.conflictN) + ' — كلها في مكان واحد، راجعها بلمسة</div></div><span class="btn g sm">فتح ›</span></button>' : '') +
         (a.reviewN ? '<button class="card planc" data-a="go" data-v="needs-review" style="width:100%;text-align:start"><span style="font-size:26px">🔎</span><div class="grow"><b>بحاجة لمراجعة التصنيف</b><div class="note">' + U.nQ(a.reviewN) + ' تصنيفها غير مؤكد — راجعها بلمسة</div></div><span class="btn g sm">مراجعة ›</span></button>' : '') +
         '</div></div></div>';
     },
     act(a, el) {
       switch (a) {
         case 'go': ui.go(el.dataset.v); return;
+        case 'conflicts': ui.go('needs-review', { tab: 'conflict' }); return;
         case 'board': UB.startBoard(); return;
         case 'resume': ui.params = {}; ui.go('study'); return;
         case 'drop': {
@@ -4148,8 +4317,6 @@ button.stat { width: 100%; }
           });
           return;
         }
-        case 'pplay': UB.openPreset(el.dataset.id); return;
-        case 'pedit': { const p = UB.presetById(el.dataset.id); if (p) UB.loadFilter(p.f); return; }
         case 'spec': UB.loadFilter({ inc: { tax: [el.dataset.v] } }); return;
         case 'weak': {
           const w = UB.weak(2, 3);
@@ -4234,13 +4401,13 @@ button.stat { width: 100%; }
   const saveDraft = () => { try { localStorage.setItem('ub1:fdraft', JSON.stringify(ui.st.f)); } catch (e) {} };
   const fx = () => ui.st.fx || (ui.st.fx = new Set());
 
-  function chipFor(f, counts, fac, v, label, allowExc = true) {
+  function chipFor(f, counts, fac, v, label) {
     const st = F.state(f, fac, v);
     const n = counts[fac] ? counts[fac].get(v) || 0 : null;
     const cls = (st || '') + (n === 0 && !st ? ' zero' : '');
-    return ui.chip('data-a="chip" data-f="' + fac + '" data-v="' + esc(v) + '"' + (allowExc ? '' : ' data-noexc="1"'), esc(label), cls, n);
+    return ui.chip('data-a="chip" data-f="' + fac + '" data-v="' + esc(v) + '"', esc(label), cls, n);
   }
-  const facChips = (f, counts, fac, allowExc = true) => '<div class="chips">' + UB.FAC[fac].v.map(([v, l]) => chipFor(f, counts, fac, v, l, allowExc)).join('') + '</div>';
+  const facChips = (f, counts, fac) => '<div class="chips">' + UB.FAC[fac].v.map(([v, l]) => chipFor(f, counts, fac, v, l)).join('') + '</div>';
   function headCount(f, facs) {
     const d = F.describe(f).filter((x) => facs.includes(x.fac));
     return d.length ? '<span class="cnt">' + esc(d.map((x) => (x.kind === 'exc' ? '− ' : '') + x.label).join(' · ')) + '</span>' : '';
@@ -4250,31 +4417,33 @@ button.stat { width: 100%; }
   }
   const has = (x) => x !== null && x !== undefined && x !== '';
 
+  // each source on one line; its years or chapters open under it
   function groupSource(f, counts) {
     const srcs = B.srcList();
-    let html = '<div class="lbl">الكتاب</div><div class="chips">' + srcs.map((s) => chipFor(f, counts, 'src', s.id, s.name)).join('') + '</div>';
-    const incSrc = f.inc.src || [];
+    const open = ui.st.srcOpen || (ui.st.srcOpen = new Set());
+    let html = '<div class="lbl">المصادر <span class="note">— لمسة: اختيار · لمسة ثانية: إلغاء · ▾ لعرض السنوات أو الفصول</span></div><div class="srctree">';
     for (const s of srcs) {
-      if (incSrc.length && !incSrc.includes(s.id)) continue;
-      if ((f.exc.src || []).includes(s.id)) continue;
-      if (s.kind === 'year') {
-        const ys = B.years(s.id);
-        if (!ys.length) continue;
-        const r = (f.yr && f.yr[s.id]) || [null, null];
-        const opt = (v, curv) => '<option value="' + v + '"' + (String(v) === String(curv) ? ' selected' : '') + '>' + v + '</option>';
-        html += '<div class="lbl">سنوات ' + esc(s.name) + '</div><div class="row">' +
-          '<span class="note">من</span><select class="inp" data-c="yr" data-s="' + esc(s.id) + '" data-p="0"><option value="">الكل</option>' + ys.map((y) => opt(y, r[0])).join('') + '</select>' +
-          '<span class="note">إلى</span><select class="inp" data-c="yr" data-s="' + esc(s.id) + '" data-p="1"><option value="">الكل</option>' + ys.map((y) => opt(y, r[1])).join('') + '</select>' +
-          (has(r[0]) || has(r[1]) ? '<button class="chip" data-a="yrclear" data-s="' + esc(s.id) + '">كل السنوات</button>' : '') + '</div>';
-      } else if (s.kind === 'chapter') {
-        const chs = B.chapters(s.id);
-        if (!chs.length) continue;
-        const sel = new Set((f.chs && f.chs[s.id]) || []);
-        html += '<div class="lbl">فصول ' + esc(s.name) + (sel.size ? ' · ' + sel.size + ' مختارة' : ' · الكل') + '</div><div class="chips">' +
-          chs.map(([n, t]) => ui.chip('data-a="ch" data-s="' + esc(s.id) + '" data-v="' + n + '"', '<span class="ens">Ch.' + n + '</span> ' + esc(t), sel.has(n) ? 'inc' : '')).join('') + '</div>';
+      const kind = B.srcParts(s.id);
+      const st = F.state(f, 'src', s.id);
+      const n = counts.src ? counts.src.get(s.id) || 0 : 0;
+      const parts = kind === 'year' ? (f.ys && f.ys[s.id]) || [] : kind === 'ch' ? (f.chs && f.chs[s.id]) || [] : [];
+      const r = kind === 'year' && f.yr && f.yr[s.id];
+      const isOpen = open.has(s.id);
+      html += '<div class="srow">' + ui.chip('data-a="chip" data-f="src" data-v="' + esc(s.id) + '"', esc(s.name), st || (n === 0 ? 'zero' : ''), n) +
+        (parts.length ? '<span class="note">' + U.ar(parts.length, kind === 'year' ? ['سنة', 'سنتان', 'سنوات', 'سنة', 'سنة'] : ['فصل', 'فصلان', 'فصول', 'فصلًا', 'فصل']) + ' مختارة</span>' : '') +
+        (r && (has(r[0]) || has(r[1])) ? '<button class="chip inc" data-a="yrclear" data-s="' + esc(s.id) + '"><span class="t">' + (has(r[0]) ? r[0] : '…') + '–' + (has(r[1]) ? r[1] : '…') + '</span><span class="x">✕</span></button>' : '') +
+        (kind ? '<button class="btn g sm srbtn" data-a="sopen" data-s="' + esc(s.id) + '">' + (kind === 'year' ? 'السنوات' : 'الفصول') + (isOpen ? ' ▴' : ' ▾') + '</button>' : '') + '</div>';
+      if (isOpen && kind) {
+        const pc = F.partCounts(f, s.id);
+        const sel = new Set(parts.map(Number));
+        const items = kind === 'year' ? B.years(s.id).map((y) => [y, String(y)]) : B.chapters(s.id).map(([c, t]) => [c, 'Ch.' + c + ' · ' + t]);
+        html += '<div class="sparts"><div class="chips' + (kind === 'ch' ? ' en" style="direction:ltr' : '') + '">' +
+          items.map(([v, label]) => ui.chip('data-a="part" data-s="' + esc(s.id) + '" data-v="' + v + '"', esc(label), sel.has(+v) ? 'inc' : pc.get(+v) ? '' : 'zero', pc.get(+v) || 0)).join('') + '</div>' +
+          (sel.size ? '<button class="lnk" data-a="partclr" data-s="' + esc(s.id) + '">إلغاء تحديد ' + (kind === 'year' ? 'السنوات' : 'الفصول') + '</button>' : '') + '</div>';
       }
     }
-    return '<div class="fg"><h4><span class="l">أ</span>المصدر والسنة' + headCount(f, ['src', 'yr', 'chs']) + '</h4>' + html + '</div>';
+    html += '</div>';
+    return '<div class="fg"><h4><span class="l">أ</span>المصدر والسنة' + headCount(f, ['src', 'yr', 'ys', 'chs']) + '</h4>' + html + '</div>';
   }
 
   function groupLength(f, counts) {
@@ -4310,7 +4479,7 @@ button.stat { width: 100%; }
       }
     }
     return '<div class="fg"><h4><span class="l">ج</span>الموضوع' + headCount(f, ['tax', 'organ', 'q']) + '</h4>' +
-      '<div class="lbl">التخصص <span class="note">— لمسة: تضمين وفتح المواضيع · لمستان: استبعاد</span></div>' +
+      '<div class="lbl">التخصص <span class="note">— لمسة: اختيار وفتح المواضيع · لمسة ثانية: إلغاء</span></div>' +
       '<div class="chips en" style="direction:ltr">' + tx.specs.map((sp) => tchip(sp, sp.en)).join('') +
       ui.chip('data-a="fxall"', ui.st.fxAll ? 'إخفاء كل المواضيع' : 'كل المواضيع ▾', 'more') + '</div>' + rows +
       '<div class="lbl">العضو</div>' + facChips(f, counts, 'organ') +
@@ -4327,7 +4496,7 @@ button.stat { width: 100%; }
   function groupType(f, counts) {
     return '<div class="fg"><h4><span class="l">هـ</span>نوع السؤال' + headCount(f, ['qtype', 'fmt', 'img', 'mod', 'gl', 'hy']) + '</h4>' +
       '<div class="lbl">المطلوب في السؤال</div>' + facChips(f, counts, 'qtype') +
-      '<div class="fg2"><div><div class="lbl">شكل السؤال</div>' + facChips(f, counts, 'fmt') + '</div><div><div class="lbl">الصور</div>' + facChips(f, counts, 'img', false) + '</div></div>' +
+      '<div class="fg2"><div><div class="lbl">شكل السؤال</div>' + facChips(f, counts, 'fmt') + '</div><div><div class="lbl">الصور</div>' + facChips(f, counts, 'img') + '</div></div>' +
       '<div class="lbl">نوع الصورة</div>' + facChips(f, counts, 'mod') +
       '<div class="lbl">الإرشادات</div>' + facChips(f, counts, 'gl') +
       '<div style="margin-top:6px">' + ui.switchRow('hy', '⭐ High-yield فقط', 'مواضيع مهمة أو متكررة في أكثر من مصدر', f.hy) + '</div></div>';
@@ -4358,11 +4527,12 @@ button.stat { width: 100%; }
       const sortSel = '<select class="inp" data-c="sort">' + F.SORTS.map(([v, l]) => '<option value="' + v + '"' + ((f.sort || 'random') === v ? ' selected' : '') + '>' + l + '</option>').join('') + '</select>';
       const summary = desc.length ? desc.map((d) => (d.kind === 'exc' ? '− ' : '') + d.label).join(' · ') : 'كل الأسئلة';
       return '<div class="view">' +
-        '<div class="vtop"><div><h1>الفلترة</h1><div class="sub">اجمع أي فلاتر معًا · لمسة = تضمين · لمستان = استبعاد · ثلاث = إلغاء</div></div>' +
-        '<div class="row"><button class="btn g sm" data-a="reset">↺ مسح الكل</button><button class="btn g sm" data-a="mine">📂 فلاتري</button><button class="btn s sm" data-a="save">💾 حفظ الفلتر</button></div></div>' +
+        '<div class="vtop"><div><h1>الفلترة</h1><div class="sub">اجمع أي فلاتر معًا · لمسة = اختيار · لمسة ثانية = إلغاء</div></div>' +
+        '<div class="row">' + (ui.st.fUndo ? '<button class="btn s sm" data-a="undo">↶ تراجع عن المسح</button>' : '') +
+        '<button class="btn g sm" data-a="reset"' + (desc.length ? '' : ' disabled') + '>🧹 مسح كل الفلاتر</button><button class="btn g sm" data-a="mine">📂 فلاتري</button><button class="btn s sm" data-a="save">💾 حفظ الفلتر</button></div></div>' +
         '<div class="fwrap"><div class="fcol">' + groupSource(f, counts) + groupLength(f, counts) + groupTopic(f, counts) + groupPatient(f, counts) + groupType(f, counts) + groupMine(f, counts) + '</div>' +
         '<div class="rpanel"><div class="bigc"><div class="n ens">' + U.num(list.length) + '</div><div class="t">' + (list.length === 1 ? 'سؤال واحد يطابق' : 'سؤالًا يطابق الفلاتر') + ' · من أصل ' + U.num(total) + '</div>' +
-        (chips ? '<div class="chips">' + chips + '</div>' : '') + '</div>' +
+        (chips ? '<div class="chips">' + chips + '</div><button class="lnk" data-a="reset" style="margin-top:8px">🧹 مسح كل الفلاتر</button>' : '') + '</div>' +
         '<div class="row startrow"><button class="btn s grow" data-a="start" data-v="practice"' + (list.length ? '' : ' disabled') + '>📖 تدريب</button><button class="btn p grow" data-a="start" data-v="exam"' + (list.length ? '' : ' disabled') + '>⏱ امتحان</button></div>' +
         '<div class="card prev"><h5>معاينة الأسئلة<span class="row" style="gap:6px"><span class="note">الترتيب:</span>' + sortSel + '</span></h5>' +
         (preview || '<div class="empty">لا توجد أسئلة مطابقة. جرّب إزالة بعض الفلاتر.</div>') +
@@ -4373,25 +4543,48 @@ button.stat { width: 100%; }
     },
     act(a, el) {
       const f = cur();
+      if (!['undo', 'sopen', 'mine', 'save', 'start', 'pq'].includes(a)) ui.st.fUndo = null;
       switch (a) {
-        case 'chip': F.toggle(f, el.dataset.f, el.dataset.v, !el.dataset.noexc); break;
+        case 'chip': {
+          const fac = el.dataset.f, v = el.dataset.v;
+          F.toggle(f, fac, v);
+          // a source taken off loses its years / chapters
+          if (fac === 'src' && !F.state(f, 'src', v)) { if (f.ys) delete f.ys[v]; if (f.chs) delete f.chs[v]; if (f.yr) delete f.yr[v]; }
+          break;
+        }
         case 'tax': {
           const id = el.dataset.v;
-          const before = F.state(f, 'tax', id);
           F.toggle(f, 'tax', id);
           const after = F.state(f, 'tax', id);
           const parents = tx.anc(id).slice(0, -1);
           if (after === 'inc') {
             f.inc.tax = (f.inc.tax || []).filter((x) => !parents.includes(x));
             if (tx.get(id).level !== 'sub') fx().add(id);
-          } else if (after === 'exc' && before === 'inc' && parents.length) {
-            const parent = parents[parents.length - 1];
-            const any = (f.inc.tax || []).some((x) => x === parent || x.startsWith(parent + '.'));
-            if (!any) f.inc.tax = (f.inc.tax || []).concat([parent]);
           } else if (after === null) fx().delete(id);
           if (f.inc.tax && !f.inc.tax.length) delete f.inc.tax;
           break;
         }
+        case 'sopen': {
+          const o = ui.st.srcOpen || (ui.st.srcOpen = new Set());
+          if (o.has(el.dataset.s)) o.delete(el.dataset.s); else o.add(el.dataset.s);
+          ui.refresh();
+          return;
+        }
+        case 'part': {
+          const src = el.dataset.s, v = +el.dataset.v;
+          const key = B.srcParts(src) === 'year' ? 'ys' : 'chs';
+          f[key] = f[key] || {};
+          const set = new Set(f[key][src] || []);
+          if (set.has(v)) set.delete(v); else set.add(v);
+          f[key][src] = [...set].sort((x, y) => x - y);
+          if (!f[key][src].length) delete f[key][src];
+          // picking a year or chapter selects its source
+          if (set.size && !F.state(f, 'src', src)) f.inc.src = (f.inc.src || []).concat([src]);
+          if (key === 'ys' && f.yr) delete f.yr[src];
+          break;
+        }
+        case 'partclr': { const src = el.dataset.s; if (f.ys) delete f.ys[src]; if (f.chs) delete f.chs[src]; break; }
+        case 'undo': if (ui.st.fUndo) { ui.st.f = ui.st.fUndo; ui.st.fUndo = null; saveDraft(); ui.refresh(); } return;
         case 'fxall': ui.st.fxAll = !ui.st.fxAll; break;
         case 'ch': {
           const s = el.dataset.s, v = +el.dataset.v;
@@ -4412,7 +4605,15 @@ button.stat { width: 100%; }
         case 'wq': f.wMax = el.dataset.v === '' ? null : +el.dataset.v; f.wMin = null; break;
         case 'sw': f[el.dataset.k] = !f[el.dataset.k]; break;
         case 'rm': { const d = F.describe(f)[+el.dataset.i]; if (d) F.removeDesc(f, d); break; }
-        case 'reset': ui.st.f = F.blank(); ui.st.fx = new Set(); ui.st.fxAll = false; saveDraft(); ui.refresh(); return;
+        case 'reset': {
+          if (F.isEmpty(f)) return;
+          ui.st.fUndo = U.clone(f);
+          ui.st.f = Object.assign(F.blank(), { sort: f.sort || 'random' });
+          ui.st.fx = new Set(); ui.st.fxAll = false;
+          saveDraft(); ui.refresh();
+          ui.toast('🧹 مُسحت كل الفلاتر');
+          return;
+        }
         case 'save': return saveFilter(f);
         case 'mine': return mineSheet();
         case 'start': {
@@ -4500,6 +4701,7 @@ button.stat { width: 100%; }
   const U = UB.U, S = UB.S, B = UB.B, F = UB.F, ui = UB.ui, V = UB.V;
   const esc = U.esc, tx = UB.tx;
   const usable = () => B.list.filter((q) => B.usable(q));
+  const reviewable = () => usable().filter((q) => !S.hidden(q.id));
   const loading = '<div class="view"><div class="loading">جارٍ التحميل…</div></div>';
 
   /* ---------- mistakes ---------- */
@@ -4508,7 +4710,7 @@ button.stat { width: 100%; }
       if (!B.loaded) return loading;
       const st = ui.st.mk || (ui.st.mk = { tab: 'active' });
       const now = Date.now();
-      const all = usable();
+      const all = reviewable();
       const active = [], due = [], ever = [], rep = [];
       const buckets = { 1: 0, 2: 0, 3: 0 };
       const reasons = {};
@@ -4568,13 +4770,13 @@ button.stat { width: 100%; }
       if (a === 'due') { UB.openPreset('p-due'); return; }
       if (a === 'wc') {
         const v = el.dataset.v;
-        const ids = usable().filter((q) => { const i = S.info(q.id); return i.active && Math.min(3, i.wrong) === +v; }).map((q) => q.id);
+        const ids = reviewable().filter((q) => { const i = S.info(q.id); return i.active && Math.min(3, i.wrong) === +v; }).map((q) => q.id);
         UB.startSheet({ qids: ids, title: 'أخطأت ' + UB.facLabel('wc', v), kind: 'review' });
         return;
       }
       if (a === 'reason') {
         const r = el.dataset.v;
-        const ids = F.sort(usable().filter((q) => { const i = S.info(q.id); return i.active && i.reasons.has(r); }), 'hard').map((q) => q.id);
+        const ids = F.sort(reviewable().filter((q) => { const i = S.info(q.id); return i.active && i.reasons.has(r); }), 'hard').map((q) => q.id);
         UB.startSheet({ qids: ids, title: 'أخطاء بسبب: ' + UB.facLabel('reason', r), kind: 'review' });
       }
     },
@@ -4700,84 +4902,84 @@ button.stat { width: 100%; }
     },
   };
 
-  /* ---------- topic summaries ---------- */
-  function hyMark(q) {
-    if (q.hy) return true;
-    if (!q.dup) return false;
-    const srcs = new Set(B.list.filter((x) => x.dup === q.dup).map((x) => x.src));
-    return srcs.size >= 2;
-  }
-  V.topics = {
+  /* ---------- Hero: questions I can never get wrong ---------- */
+  V.hero = {
     render() {
       if (!B.loaded) return loading;
-      const st = ui.st.tp || (ui.st.tp = { sel: '', open: new Set() });
-      const all = usable();
-      const counts = taxCounts(all);
-      if (!st.sel) {
-        const first = tx.specs.find((s) => counts[s.id]);
-        if (first) { st.sel = first.id; st.open.add(first.id); }
-      }
-      const list = all.filter((q) => B.eff(q).tax.includes(st.sel)).sort((a, b) => (B.eff(a).sub || '').localeCompare(B.eff(b).sub || '') || a.order.localeCompare(b.order));
-      ui.st.tpList = list;
-      let att = 0, ok = 0, ans = 0;
-      for (const q of list) { const i = S.info(q.id); if (i.n) ans++; for (const x of i.attempts) { att++; if (x[2] === 1) ok++; } }
-      const acc = att ? U.pct(ok, att) : null;
-      let lastSub = null;
-      const cards = list.map((q, idx) => {
+      const list = usable().filter((q) => S.info(q.id).hero);
+      ui.st.heroList = list;
+      const hide = S.pref('heroHide') !== false;
+      const rows = list.map((q, i) => {
         const e = B.eff(q);
-        let head = '';
-        if (st.sel !== e.sub && e.sub !== lastSub) { head = '<div class="sec" style="padding:14px 16px 0;margin:0"><h3 class="ens" style="font-size:15px">' + esc(tx.name(e.sub || e.topic)) + '</h3></div>'; lastSub = e.sub; }
-        const sum = (q.sum || q.expl.split(/\.\s+/)[0]).replace(/^[A-J]\s*—\s*/, '');
-        return head + '<div class="sumcard"><div class="row" style="gap:6px"><span class="mini pri">' + esc(B.srcLabel(q)) + '</span>' + (hyMark(q) ? '<span class="mini" style="background:var(--warnbg);color:var(--warn)">High-yield</span>' : '') +
-          (S.info(q.id).wrong ? '<span class="mini bad">✕ ' + S.info(q.id).wrong + '</span>' : '') + '<span class="grow"></span><button class="btn g sm" style="height:32px" data-a="open" data-i="' + idx + '">افتح السؤال</button></div>' +
-          '<p class="en"><b style="color:var(--ok)">✓ ' + esc(B.optText(q, q.ans)) + '</b><br>' + esc(sum) + '</p></div>';
+        return '<div class="list-row" style="align-items:center">' + ui.dot(e.spec, 30) + '<div class="grow"><div class="qs en">' + esc(q.stem) + '</div><div class="m"><span class="mini pri">' + esc(B.srcLabel(q)) + '</span>' +
+          (e.sub || e.topic || e.spec ? '<span class="mini ens">' + esc(tx.label(e.sub || e.topic || e.spec)) + '</span>' : '') + '</div></div>' +
+          '<button class="btn g sm" data-a="open" data-i="' + i + '">فتح</button><button class="btn dg sm" data-a="out" data-i="' + i + '">إخراج</button></div>';
       }).join('');
-      return '<div class="view"><div class="vtop"><div><h1>ملخص المواضيع</h1><div class="sub">ملخصات كل أسئلة الموضوع من كل المصادر في صفحة واحدة — مذكرة High-yield جاهزة</div></div></div>' +
-        '<div class="split"><div class="card tree">' + treeHtml(counts, st.sel, st.open, 'node') + '</div>' +
-        '<div><div class="card pad" style="margin-bottom:12px"><div class="row"><div class="grow"><div class="note">' + esc(tx.label(st.sel, 2)) + '</div><div style="font-size:22px;font-weight:700" class="ens">' + esc(tx.name(st.sel)) + '</div>' +
-        '<div class="muted">' + U.nQ(list.length) + ' · حللت ' + ans + (acc != null ? ' · نسبة الصحيح ' + acc + '%' : '') + '</div></div>' +
-        '<button class="btn p" data-a="start"' + (list.length ? '' : ' disabled') + '>📖 تدرّب على الموضوع</button></div></div>' +
-        '<div class="card">' + (cards || '<div class="empty">لا توجد أسئلة.</div>') + '</div>' +
-        '<div class="note" style="margin-top:8px">ملاحظة: الملخص يكشف الإجابة — استخدم هذه الصفحة للمراجعة السريعة، والجلسات النظيفة لاختبار نفسك.</div></div></div></div>';
+      return '<div class="view"><div class="vtop"><div><h1>Hero 🦸</h1><div class="sub">أسئلة اخترتها لأنك مستحيل أن تخطئ فيها. تبقى في المصادر والفلاتر، وإذا أخطأت في أحدها مرة واحدة يخرج من هنا تلقائيًا.</div></div>' +
+        (list.length ? '<button class="btn p" data-a="start">ابدأ جلسة بأسئلة Hero · ' + U.nQ(list.length) + '</button>' : '') + '</div>' +
+        '<div class="card pad" style="margin-bottom:14px">' + ui.switchRow('herohide', 'إخفاؤها من كل الجلسات والمراجعات', hide ? 'مخفية الآن: لا تظهر في الفلترة ولا الخطط ولا مراجعة الأخطاء' : 'ظاهرة الآن مع باقي الأسئلة', hide) + '</div>' +
+        '<div class="card">' + (rows || '<div class="empty"><div class="big">🦸</div>لم تضف أي سؤال إلى Hero بعد.<br>اضغط 🦸 تحت أي سؤال تعرف أنك لن تخطئ فيه.</div>') + '</div></div>';
     },
     act(a, el) {
-      const st = ui.st.tp;
-      if (a === 'node') {
-        const v = el.dataset.v;
-        if (st.sel === v) toggleOpen(st.open, v);
-        else if (!st.open.has(v)) toggleOpen(st.open, v);
-        st.sel = v;
-        ui.refresh();
-        return;
-      }
-      const list = ui.st.tpList || [];
-      if (a === 'open') UB.startList([list[+el.dataset.i].id], tx.name(st.sel), 'practice', 0);
-      if (a === 'start') UB.startSheet({ qids: list.map((q) => q.id), title: tx.name(st.sel), kind: 'practice' });
+      if (a === 'sw') { S.setPref('heroHide', S.pref('heroHide') === false); UB._agg = null; ui.refresh(); ui.renderNav(); return; }
+      const list = ui.st.heroList || [];
+      if (a === 'start') { if (list.length) UB.startSheet({ qids: list.map((q) => q.id), title: 'Hero 🦸', kind: 'practice', hero: true }); return; }
+      const q = list[+el.dataset.i];
+      if (!q) return;
+      if (a === 'open') { UB.startList([q.id], 'Hero 🦸', 'practice', 0, { hero: true }); return; }
+      if (a === 'out') { S.setHero(q.id, false); ui.toast('أُخرج من Hero'); UB._agg = null; ui.refresh(); }
     },
   };
 
   /* ---------- needs review ---------- */
+  // groups of the questions still to review: all / the answer key disagrees with the explanation / any reviewer note
+  UB.reviewGroups = function () {
+    const open = B.list.filter((q) => B.status(q) !== 'ok');
+    const noted = (q) => q.conflict || (q.conf < 1 && !!B.reviewNote(q));
+    return { all: open, conflict: open.filter((q) => q.conflict), notes: open.filter(noted) };
+  };
+  const NR_TABS = [['conflict', '⚠️ الجواب يخالف الشرح'], ['notes', '📝 كل الملاحظات'], ['all', 'الكل']];
   V['needs-review'] = {
     render() {
       if (!B.loaded) return loading;
-      const list = B.list.filter((q) => B.status(q) !== 'ok');
+      if (ui.params && ui.params.tab) { ui.st.nrTab = ui.params.tab; ui.params.tab = null; }
+      const g = UB.reviewGroups();
+      const tab = g[ui.st.nrTab] ? ui.st.nrTab : 'all';
+      const list = g[tab];
       ui.st.nrList = list;
       const rows = list.map((q, idx) => {
         const e = B.eff(q);
         const inc = q.status === 'incomplete';
-        const why = inc ? (!q.expl ? 'لا يوجد شرح' : 'الإجابة غير محددة') : 'الثقة ' + Math.round(q.conf * 100) + '٪';
+        const why = inc ? (!q.expl ? 'لا يوجد شرح' : 'الإجابة غير محددة') : q.conflict ? '⚠️ الجواب يخالف الشرح' : 'الثقة ' + Math.round(q.conf * 100) + '٪';
+        const note = B.reviewNote(q);
         return '<div class="list-row" style="align-items:center">' + ui.dot(e.spec, 30) + '<div class="grow"><div class="qs en">' + esc(q.stem) + '</div><div class="m"><span class="mini pri">' + esc(B.srcLabel(q)) + '</span>' +
-          '<span class="mini ens">' + esc(e.sub || e.topic || e.spec ? tx.label(e.sub || e.topic || e.spec) : '— بلا تصنيف') + '</span><span class="mini ar ' + (inc ? 'bad' : '') + '">' + why + '</span>' + (q.page ? '<span class="mini">ص ' + esc(q.page) + '</span>' : '') + '</div>' +
+          '<span class="mini ens">' + esc(e.sub || e.topic || e.spec ? tx.label(e.sub || e.topic || e.spec) : '— بلا تصنيف') + '</span><span class="mini ar ' + (inc || q.conflict ? 'bad' : '') + '">' + why + '</span>' + (q.page ? '<span class="mini">ص ' + esc(q.page) + '</span>' : '') + '</div>' +
+          (note && tab !== 'all' ? '<div class="note en" style="margin-top:6px;line-height:1.55">' + esc(note) + '</div>' : '') +
           (inc ? '<div class="note" style="margin-top:4px">لا يظهر في الجلسات حتى يُستكمل من الكتاب.</div>' : '') + '</div>' +
-          '<button class="btn g sm" data-a="edit" data-i="' + idx + '">تعديل</button>' + (inc ? '' : '<button class="btn s sm" data-a="ok" data-i="' + idx + '">✓ صحيح</button>') + '</div>';
+          (inc ? '' : '<button class="btn g sm" data-a="open" data-i="' + idx + '">فتح</button>') +
+          '<button class="btn g sm" data-a="edit" data-i="' + idx + '">تعديل</button>' + (inc ? '' : '<button class="btn s sm" data-a="ok" data-i="' + idx + '">' + (q.conflict || tab === 'notes' ? '✓ راجعته' : '✓ صحيح') + '</button>') + '</div>';
       }).join('');
-      return '<div class="view"><div class="vtop"><div><h1>بحاجة لمراجعة</h1><div class="sub">أسئلة تصنيفها غير مؤكد أو بياناتها ناقصة. أكّد التصنيف بلمسة أو عدّله.</div></div></div>' +
-        '<div class="card">' + (rows || '<div class="empty"><div class="big">✅</div>لا توجد أسئلة بحاجة لمراجعة.</div>') + '</div></div>';
+      const chips = '<div class="chips" style="margin:0 0 12px">' + NR_TABS.map(([k, l]) => '<button class="chip' + (tab === k ? ' inc' : '') + '" data-a="tab" data-v="' + k + '">' + l + ' <b class="ens">' + g[k].length + '</b></button>').join('') + '</div>';
+      const usable = list.filter(B.usable).length;
+      const startBtn = tab !== 'all' && usable ? '<button class="btn p" data-a="start">ابدأ جلسة بهذه الأسئلة · ' + U.nQ(usable) + '</button>' : '';
+      const sub = tab === 'conflict' ? 'أسئلة يقول ملفها إن الجواب في المفتاح لا يتطابق مع الشرح. افتح كل سؤال، وبعد أن تتأكد منه اضغط «✓ راجعته» فيخرج من القائمة.'
+        : tab === 'notes' ? 'كل الأسئلة التي عليها ملاحظة مراجعة: جواب مخالف، صورة ناقصة، وحدة مشكوك فيها، وغيرها.'
+          : 'أسئلة تصنيفها غير مؤكد أو بياناتها ناقصة أو عليها ملاحظة. أكّد التصنيف بلمسة أو عدّله.';
+      const empty = tab === 'conflict' ? 'لا توجد أسئلة جوابها يخالف شرحها.' : 'لا توجد أسئلة بحاجة لمراجعة.';
+      return '<div class="view"><div class="vtop"><div><h1>بحاجة لمراجعة</h1><div class="sub">' + sub + '</div></div>' + startBtn + '</div>' + chips +
+        '<div class="card">' + (rows || '<div class="empty"><div class="big">✅</div>' + empty + '</div>') + '</div></div>';
     },
     act(a, el) {
+      if (a === 'tab') { ui.st.nrTab = el.dataset.v; ui.refresh(); return; }
+      if (a === 'start') {
+        const ids = (ui.st.nrList || []).filter(B.usable).map((q) => q.id);
+        if (ids.length) UB.startSheet({ qids: ids, title: ui.st.nrTab === 'conflict' ? 'الجواب يخالف الشرح' : 'أسئلة عليها ملاحظات', kind: 'practice' });
+        return;
+      }
       const q = (ui.st.nrList || [])[+el.dataset.i];
       if (!q) return;
-      if (a === 'ok') { S.setReviewed(q.id, true); ui.toast('✓ أُكّد التصنيف'); ui.refresh(); }
+      if (a === 'open') { UB.startList([q.id], 'مراجعة سؤال', 'practice', 0); return; }
+      if (a === 'ok') { S.setReviewed(q.id, true); ui.toast(q.conflict ? '✓ عُلّم كسؤال تمت مراجعته' : '✓ أُكّد التصنيف'); ui.refresh(); }
       if (a === 'edit') UB.editQuestion(q, () => ui.refresh());
     },
   };
@@ -5022,6 +5224,7 @@ button.stat { width: 100%; }
         const srcNames = b.srcs.map((id) => (B.sources[id] ? B.sources[id].full : id)).join('، ');
         return '<div class="list-row" style="align-items:center"><div class="grow"><b style="font-size:15px">' + esc(b.name) + '</b>' + (b.builtin ? ' <span class="mini">مدمج</span>' : ' <span class="mini pri">مستورد</span>') +
           '<div class="note">' + U.nQ(b.count) + ' · ' + esc(srcNames) + '</div></div>' +
+          (!b.builtin && b.entry && !isPdfBank(b.entry) ? '<button class="btn g sm" data-a="dl" data-id="' + esc(b.id) + '" aria-label="تنزيل الملف" title="تنزيل ملف JSON">⬇︎ تنزيل</button>' : '') +
           (!b.builtin && b.entry ? '<button class="btn dg sm" data-a="del" data-id="' + esc(b.id) + '">حذف</button>' : '') +
           '<button class="switch' + (off.has(b.id) ? '' : ' on') + '" data-a="tog" data-id="' + esc(b.id) + '" aria-label="تفعيل"></button></div>';
       }).join('');
@@ -5057,6 +5260,11 @@ button.stat { width: 100%; }
         ui.refresh();
         return;
       }
+      if (a === 'dl') {
+        const b = B.banks.find((x) => x.id === el.dataset.id);
+        if (b && b.entry && !isPdfBank(b.entry)) shareBank(b);
+        return;
+      }
       if (a === 'del') {
         const b = B.banks.find((x) => x.id === el.dataset.id);
         if (!b || !b.entry) return;
@@ -5078,6 +5286,32 @@ button.stat { width: 100%; }
       U.fileText(file).then((text) => importBank(text, file.name)).catch(() => ui.toast('تعذّرت قراءة الملف', 'bad'));
     },
   };
+
+  /* ---------- imported JSON banks: download / share the file (not the bank read from the AUA PDF) ---------- */
+  const PDF_BANK = 'AUA SASP 2000–2022';
+  function isPdfBank(e) { return !!e && (e.origin === 'pdf' || e.name === PDF_BANK); }
+  function bankFileName(name) {
+    const base = String(name || 'bank').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80) || 'bank';
+    return base + '.json';
+  }
+  async function shareBank(b) {
+    let text;
+    try { text = await UB.bankText(b.entry); } catch (e) { ui.toast('تعذّرت قراءة ملف هذا المصدر', 'bad'); return; }
+    const filename = bankFileName(b.name);
+    const r = await S.shareFile(text, filename);
+    if (r.ok || r.reason === 'declined') return;
+    // the share sheet must open inside a tap: if reading the file took too long, ask for one more tap
+    if (r.reason === 'gesture') {
+      const h = ui.sheet({
+        cls: 'sm',
+        html: ui.sh('⬇︎ ' + esc(b.name)) + '<div class="muted" style="font-size:15px;line-height:1.7">الملف جاهز (' + U.nQ(b.count) + '). اضغط «مشاركة / حفظ» ثم اختر «حفظ في الملفات» أو التطبيق الذي تريد فتحه فيه.</div>' +
+          '<div class="acts"><button class="btn g" data-a="close">إلغاء</button><button class="btn p" data-a="share">مشاركة / حفظ</button></div>',
+        onAct: (a) => { if (a === 'share') { S.shareFile(text, filename).then(() => h.close()); } },
+      });
+      return;
+    }
+    ui.toast('تعذّر تنزيل الملف', 'bad');
+  }
 
   /* ---------- AUA SASP from the user's own PDF (read on the device) ---------- */
   function loadPdfJs() {
@@ -5133,7 +5367,11 @@ button.stat { width: 100%; }
     const ys = Object.keys(years).sort();
     const rev = qs.filter((q) => q.status === 'review' || q.conf < 0.75).length;
     const imgs = qs.reduce((s, q) => s + (q.images ? q.images.length : 0), 0);
-    const old = (S.docs.banks.list || []).filter((b) => (b.srcs || []).includes('aua'));
+    // replace an earlier copy read from the PDF, and any bank holding the same questions (the old 25-question pilot),
+    // but not other AUA banks with different questions (e.g. AUA 2026 from a JSON file)
+    const newIds = new Set(qs.map((q) => q.id));
+    const clash = new Set(B.all.filter((q) => newIds.has(q.id)).map((q) => q.bank));
+    const old = (S.docs.banks.list || []).filter((b) => isPdfBank(b) || clash.has(b.id));
     const grid = ys.map((y) => '<span class="mini" style="display:inline-block;margin:2px">' + y + ': ' + years[y] + '</span>').join('');
     h.o.sticky = false;
     h.update(ui.sh('جاهز للحفظ', U.nQ(qs.length) + ' · ' + ys[0] + '–' + ys[ys.length - 1]) +
@@ -5151,7 +5389,7 @@ button.stat { width: 100%; }
       try {
         for (const b of old) await S.removeBank(b);
         const text = JSON.stringify(res.bank);
-        await S.uploadBank(text, { name: res.bank.name, count: qs.length, srcs: ['aua'] });
+        await S.uploadBank(text, { name: res.bank.name, count: qs.length, srcs: ['aua'], origin: 'pdf' });
         await B.load();
         UB._agg = null;
         h.o.sticky = false;
@@ -5330,6 +5568,312 @@ button.stat { width: 100%; }
 })();
 
 </script><script>
+/* UroBank — custom plans: my own study plan over several days (sources, kind of questions, order, questions per day) */
+(function () {
+  'use strict';
+  const UB = window.UB;
+  const U = UB.U, S = UB.S, B = UB.B, F = UB.F, ui = UB.ui, V = UB.V;
+  const esc = U.esc, tx = UB.tx;
+  const DAY = 864e5;
+
+  const KINDS = [['new', 'جديدة لم أحلها'], ['all', 'كل الأسئلة'], ['wrong', 'أخطائي']];
+  const ORDERS = [['old', 'الأقدم أولًا'], ['new', 'الأحدث أولًا'], ['topic', 'حسب الموضوع'], ['random', 'عشوائي']];
+  const WD = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
+  /* ---------- stored plans (in the synced settings document) ---------- */
+  const P = (UB.CP = {
+    list: () => S.docs.meta.cplans || [],
+    save(list) { S.docs.meta.cplans = list; S.touch('meta'); },
+    get: (id) => P.list().find((p) => p.id === id) || null,
+    active: () => P.list().find((p) => p.active) || null,
+    ids: (p) => (p && p.ids ? p.ids.split(',').filter(Boolean) : []),
+    update(id, patch) { P.save(P.list().map((p) => (p.id === id ? Object.assign({}, p, patch) : p))); },
+  });
+
+  function dayLabel(start, d) {
+    const t = U.parseDay(start) + d * DAY;
+    const dt = new Date(t);
+    return WD[dt.getDay()] + ' ' + dt.getDate() + '/' + (dt.getMonth() + 1);
+  }
+
+  // the questions of a new plan, in the chosen order (hidden Hero questions are left out)
+  function pool(form) {
+    let base = F.blank();
+    if (form.useDraft) {
+      try { base = F.norm(JSON.parse(localStorage.getItem('ub1:fdraft') || 'null')); } catch (e) { base = F.blank(); }
+    }
+    base.inc.src = (form.f.inc.src || []).slice();
+    if (!base.inc.src.length) delete base.inc.src;
+    base.ys = U.clone(form.f.ys || {});
+    base.chs = U.clone(form.f.chs || {});
+    base.yr = {};
+    let list = F.run(base);
+    if (form.kind === 'new') list = list.filter((q) => !S.info(q.id).n);
+    else if (form.kind === 'wrong') list = list.filter((q) => S.info(q.id).active);
+    if (form.order === 'old') list.sort((a, b) => a.order.localeCompare(b.order));
+    else if (form.order === 'new') list.sort((a, b) => (b.year || 0) - (a.year || 0) || (b.ch || 0) - (a.ch || 0) || a.order.localeCompare(b.order));
+    else if (form.order === 'topic') {
+      const key = (q) => { const e = B.eff(q); return e.sub || e.topic || e.spec || '~'; };
+      list.sort((a, b) => key(a).localeCompare(key(b)) || a.order.localeCompare(b.order));
+    } else list = U.shuffle(list, form.seed);
+    return list;
+  }
+  const evenly = (n, days) => {
+    const base = Math.floor(n / days), rest = n % days;
+    return Array.from({ length: days }, (_, i) => base + (i < rest ? 1 : 0));
+  };
+
+  /* ---------- progress of a plan: what is done, today's portion, what is behind ---------- */
+  function progress(p) {
+    const ids = P.ids(p);
+    const doneAt = new Map();
+    for (const id of ids) {
+      if (S.hidden(id)) { doneAt.set(id, p.created); continue; }
+      const at = (S.info(id).attempts || []).find((x) => x[0] * 1000 >= p.created);
+      if (at) doneAt.set(id, at[0] * 1000);
+    }
+    const start = U.parseDay(p.start);
+    const t = Math.floor((U.dayStart(Date.now()) - start) / DAY);
+    const sum = (d) => p.days.slice(0, Math.max(0, d + 1)).reduce((s, n) => s + n, 0);
+    const total = Math.min(ids.length, sum(p.days.length - 1));
+    const done = doneAt.size;
+    const todayStart = U.dayStart(Date.now());
+    let doneToday = 0;
+    for (const v of doneAt.values()) if (v >= todayStart) doneToday++;
+    const cumToday = t < 0 ? 0 : Math.min(total, sum(Math.min(t, p.days.length - 1)));
+    const cumYest = t <= 0 ? 0 : Math.min(total, sum(Math.min(t - 1, p.days.length - 1)));
+    const behind = Math.max(0, cumYest - (done - doneToday));
+    const quota = t >= 0 && t < p.days.length ? p.days[t] : 0;
+    const remaining = Math.max(0, cumToday - done);
+    const queue = ids.filter((id) => !doneAt.has(id)).slice(0, remaining);
+    const doneBy = (d) => { const end = start + (d + 1) * DAY; let n = 0; for (const v of doneAt.values()) if (v < end) n++; return n; };
+    return { ids, t, total, done, doneToday, behind, quota, remaining, queue, sum, doneBy, over: t >= p.days.length };
+  }
+  UB.cplanToday = function () {
+    const p = P.active();
+    if (!p) return null;
+    const g = progress(p);
+    return { name: p.name, day: g.t + 1, days: p.days.length, quota: g.quota, remaining: g.remaining, doneToday: g.doneToday, behind: g.behind, done: g.done, total: g.total, over: g.over };
+  };
+
+  /* ---------- the form for a new plan ---------- */
+  function newForm() {
+    return { name: '', f: F.blank(), kind: 'new', order: 'old', ndays: 7, quotas: null, edited: false, useDraft: false, seed: Math.floor(Math.random() * 1e9), start: U.dayKey(Date.now()) };
+  }
+  function srcPicker(form) {
+    const open = ui.st.cpOpen || (ui.st.cpOpen = new Set());
+    const f = form.f;
+    let html = '<div class="srctree">';
+    for (const s of B.srcList()) {
+      const kind = B.srcParts(s.id);
+      const on = (f.inc.src || []).includes(s.id);
+      const n = B.list.filter((q) => q.src === s.id && B.usable(q)).length;
+      const parts = kind === 'year' ? (f.ys && f.ys[s.id]) || [] : kind === 'ch' ? (f.chs && f.chs[s.id]) || [] : [];
+      html += '<div class="srow">' + ui.chip('data-a="src" data-v="' + esc(s.id) + '"', esc(s.name), on ? 'inc' : '', n) +
+        (parts.length ? '<span class="note">' + U.ar(parts.length, kind === 'year' ? ['سنة', 'سنتان', 'سنوات', 'سنة', 'سنة'] : ['فصل', 'فصلان', 'فصول', 'فصلًا', 'فصل']) + ' مختارة</span>' : '') +
+        (kind ? '<button class="btn g sm srbtn" data-a="sopen" data-s="' + esc(s.id) + '">' + (kind === 'year' ? 'السنوات' : 'الفصول') + (open.has(s.id) ? ' ▴' : ' ▾') + '</button>' : '') + '</div>';
+      if (kind && open.has(s.id)) {
+        const sel = new Set(parts.map(Number));
+        const items = kind === 'year' ? B.years(s.id).map((y) => [y, String(y)]) : B.chapters(s.id).map(([c, t]) => [c, 'Ch.' + c + ' · ' + t]);
+        html += '<div class="sparts"><div class="chips' + (kind === 'ch' ? ' en" style="direction:ltr' : '') + '">' +
+          items.map(([v, l]) => ui.chip('data-a="part" data-s="' + esc(s.id) + '" data-v="' + v + '"', esc(l), sel.has(+v) ? 'inc' : '')).join('') + '</div></div>';
+      }
+    }
+    return html + '</div>';
+  }
+  const seg = (key, cur, opts) => '<div class="seg">' + opts.map(([v, l]) => '<button class="' + (cur === v ? 'on' : '') + '" data-a="' + key + '" data-v="' + v + '">' + l + '</button>').join('') + '</div>';
+  function stepper(a, attrs, v, min) {
+    return '<div class="stepper"><button class="sb" data-a="' + a + '" ' + attrs + ' data-d="-1" aria-label="أقل"' + (v <= min ? ' disabled' : '') + '>−</button>' +
+      '<input type="number" inputmode="numeric" class="thin" data-i="' + a + '" ' + attrs + ' data-key="' + a + '-' + attrs.replace(/\W/g, '') + '" value="' + v + '">' +
+      '<button class="sb" data-a="' + a + '" ' + attrs + ' data-d="1" aria-label="أكثر">+</button></div>';
+  }
+  function formView(form) {
+    const list = pool(form);
+    const n = list.length;
+    if (!form.edited || !form.quotas) form.quotas = evenly(n, form.ndays);
+    while (form.quotas.length < form.ndays) form.quotas.push(form.quotas.length ? form.quotas[form.quotas.length - 1] : 0);
+    if (form.quotas.length > form.ndays) form.quotas.length = form.ndays;
+    const planned = form.quotas.reduce((s, x) => s + x, 0);
+    const diff = planned - n;
+    const draft = (() => { try { return F.norm(JSON.parse(localStorage.getItem('ub1:fdraft') || 'null')); } catch (e) { return F.blank(); } })();
+    const draftDesc = F.describe(Object.assign({}, draft, { inc: Object.assign({}, draft.inc, { src: undefined }), ys: {}, chs: {}, yr: {} })).filter((d) => d.fac !== 'src').map((d) => d.label).join(' · ');
+    const days = form.quotas.map((q, d) => '<div class="cpday"><div class="grow"><b>اليوم ' + (d + 1) + '</b> <span class="note">' + dayLabel(form.start, d) + '</span></div>' + stepper('q', 'data-d0="' + d + '"', q, 0) + '</div>').join('');
+    return '<div class="view"><div class="vtop"><div><h1>خطة خاصة جديدة</h1><div class="sub">اختر المصادر ونوع الأسئلة وترتيبها، ثم عدد الأيام وكم سؤالًا في كل يوم.</div></div>' +
+      (P.list().length ? '<button class="btn g sm" data-a="cancel">رجوع</button>' : '') + '</div>' +
+      '<div class="cpgrid"><div class="cpcol">' +
+      '<div class="card pad"><div class="lbl">اسم الخطة</div><input class="inp" style="width:100%" data-i="name" data-key="cpname" value="' + esc(form.name) + '" placeholder="مثلًا: AUA 2015–2022 في أسبوع"></div>' +
+      '<div class="card pad"><div class="lbl">1. المصادر <span class="note">— بلا اختيار = كل المصادر</span></div>' + srcPicker(form) + '</div>' +
+      '<div class="card pad"><div class="lbl">2. نوع الأسئلة</div>' + seg('kind', form.kind, KINDS) +
+      '<div style="margin-top:10px">' + ui.switchRow('draft', 'تفاصيل إضافية من صفحة «الفلترة»', draftDesc ? 'الفلاتر الحالية هناك: ' + esc(draftDesc) : 'لا توجد فلاتر هناك الآن. اختر من «الفلترة» المواضيع والطول ونوع السؤال وغيرها، ثم ارجع إلى هنا.', form.useDraft) + '</div></div>' +
+      '<div class="card pad"><div class="lbl">3. ترتيب الأسئلة</div>' + seg('order', form.order, ORDERS) + '</div>' +
+      '</div><div class="cpcol">' +
+      '<div class="card pad"><div class="cpcount"><b>' + U.num(n) + '</b><span>' + (n === 1 ? 'سؤال واحد في هذه الخطة' : 'سؤالًا في هذه الخطة') + '</span></div>' +
+      '<div class="lbl">4. عدد الأيام</div>' + stepper('nd', '', form.ndays, 1) +
+      '<div class="lbl" style="margin-top:12px">5. الأسئلة في كل يوم <span class="note">— غيّر أي يوم كما يناسب وقتك</span></div>' +
+      '<div class="row" style="gap:8px;margin-bottom:8px"><button class="btn g sm" data-a="even">توزيع بالتساوي</button><span class="note">أو نفس العدد لكل يوم:</span>' + stepper('same', '', form.quotas[0] || 0, 0) + '</div>' +
+      '<div class="cpdays">' + days + '</div>' +
+      '<div class="note" style="margin-top:10px">' + 'المجموع ' + U.nQ(planned) + (diff < 0 ? ' · يبقى ' + U.nQ(-diff) + ' خارج الخطة — زِد عدد الأيام أو الأسئلة' : diff > 0 ? ' · أكثر من أسئلة الخطة بـ ' + (diff) + ' (لا مشكلة)' : ' · مطابق لعدد الأسئلة') + '</div>' +
+      '<div class="note">ما لا تكمله من حصة يوم يُضاف إلى اليوم التالي تلقائيًا.</div>' +
+      '<button class="btn p w" style="margin-top:12px" data-a="create"' + (n ? '' : ' disabled') + '>💾 حفظ الخطة وبدؤها</button></div>' +
+      '</div></div></div>';
+  }
+
+  /* ---------- a saved plan ---------- */
+  function planView(p) {
+    const g = progress(p);
+    const others = P.list().filter((x) => x.id !== p.id);
+    const pct = g.total ? U.pct(g.done, g.total) : 0;
+    let today;
+    if (g.t < 0) today = '<div class="note">تبدأ الخطة يوم ' + dayLabel(p.start, 0) + '.</div>';
+    else if (g.remaining) today = '<div class="cptoday"><div class="grow"><b>حصة اليوم: ' + U.nQ(g.remaining) + '</b><div class="note">' + (g.behind ? 'منها ' + U.nQ(g.behind) + ' متأخرة من الأيام السابقة · ' : '') + 'أنجزت اليوم ' + g.doneToday + '</div></div><button class="btn p" data-a="today">ابدأ حصة اليوم ›</button></div>';
+    else if (g.done >= g.total) today = '<div class="cptoday done"><b>🎉 أكملت الخطة كلها!</b></div>';
+    else today = '<div class="cptoday done"><b>✓ أنجزت حصة اليوم</b><div class="note">أنجزت اليوم ' + g.doneToday + '. حصة الغد ' + (g.t + 1 < p.days.length ? U.nQ(p.days[g.t + 1]) : '—') + '.</div><button class="btn g sm" data-a="ahead">أكمل من حصة الغد</button></div>';
+    const rows = p.days.map((q, d) => {
+      const tgt = Math.min(g.total, g.sum(d));
+      let st = '';
+      if (d < g.t) { const by = g.doneBy(d); st = by >= tgt ? '<span class="mini ok ar">✓ تم</span>' : '<span class="mini bad ar">ناقص ' + (tgt - by) + ' ← رُحّل</span>'; }
+      else if (d === g.t) st = '<span class="mini pri ar">اليوم</span>';
+      return '<div class="cpday' + (d === g.t ? ' now' : '') + '"><div class="grow"><b>اليوم ' + (d + 1) + '</b> <span class="note">' + dayLabel(p.start, d) + '</span> ' + st + '</div>' + stepper('pq', 'data-d0="' + d + '"', q, 0) + '</div>';
+    }).join('');
+    const kind = (KINDS.find((k) => k[0] === p.kind) || ['', ''])[1];
+    const order = (ORDERS.find((k) => k[0] === p.order) || ['', ''])[1];
+    return '<div class="view"><div class="vtop"><div><h1>' + esc(p.name) + '</h1><div class="sub">' + esc(p.desc || '') + ' · ' + kind + ' · ' + order + ' · ' + U.nDays(p.days.length) + '</div></div>' +
+      '<div class="row"><button class="btn g sm" data-a="ren">إعادة تسمية</button><button class="btn dg sm" data-a="del">حذف</button><button class="btn s sm" data-a="new">＋ خطة جديدة</button></div></div>' +
+      '<div class="cpgrid"><div class="cpcol">' +
+      '<div class="card pad"><div class="row" style="align-items:center;gap:14px"><div class="ring">' + ui.ring(pct) + '<b>' + pct + '%</b></div><div class="grow"><b style="font-size:16px">' + U.num(g.done) + ' / ' + U.num(g.total) + '</b><div class="note">' + (g.over ? 'انتهت أيام الخطة' : 'اليوم ' + (g.t + 1) + ' من ' + p.days.length) + '</div></div></div>' + today + '</div>' +
+      (others.length ? '<div class="card"><div class="sec" style="padding:12px 16px 4px;margin:0"><h3>خططي الأخرى</h3></div>' + others.map((x) => '<div class="list-row" style="align-items:center"><div class="grow"><b>' + esc(x.name) + '</b><div class="note">' + U.nQ(P.ids(x).length) + ' · ' + U.nDays(x.days.length) + '</div></div><button class="btn g sm" data-a="use" data-id="' + esc(x.id) + '">' + (x.active ? 'الفعّالة' : 'اجعلها الفعّالة') + '</button><button class="btn g sm" data-a="show" data-id="' + esc(x.id) + '">عرض</button></div>').join('') + '</div>' : '') +
+      '</div><div class="cpcol"><div class="card pad"><div class="row" style="justify-content:space-between;align-items:center"><div class="lbl" style="margin:0">الأيام <span class="note">— غيّر عدد أي يوم متى شئت</span></div>' +
+      '<div class="row" style="gap:6px"><button class="btn g sm" data-a="dayrm"' + (p.days.length <= 1 ? ' disabled' : '') + '>− يوم</button><button class="btn g sm" data-a="dayadd">＋ يوم</button></div></div>' +
+      '<div class="cpdays">' + rows + '</div>' + (p.active ? '' : '<button class="btn p w" style="margin-top:10px" data-a="use" data-id="' + esc(p.id) + '">اجعلها الخطة الفعّالة</button>') + '</div></div></div></div>';
+  }
+
+  V.cplan = {
+    render() {
+      if (!B.loaded) return '<div class="view"><div class="loading">جارٍ التحميل…</div></div>';
+      if (ui.st.cpForm || !P.list().length) return formView(ui.st.cpForm || (ui.st.cpForm = newForm()));
+      const p = P.get(ui.st.cpShow) || P.active() || P.list()[0];
+      return planView(p);
+    },
+    act(a, el) {
+      const form = ui.st.cpForm;
+      if (form) {
+        const f = form.f;
+        switch (a) {
+          case 'src': {
+            const v = el.dataset.v;
+            const on = (f.inc.src || []).includes(v);
+            f.inc.src = on ? f.inc.src.filter((x) => x !== v) : (f.inc.src || []).concat([v]);
+            if (on) { delete f.ys[v]; delete f.chs[v]; }
+            break;
+          }
+          case 'sopen': { const o = ui.st.cpOpen || (ui.st.cpOpen = new Set()); if (o.has(el.dataset.s)) o.delete(el.dataset.s); else o.add(el.dataset.s); break; }
+          case 'part': {
+            const src = el.dataset.s, v = +el.dataset.v;
+            const key = B.srcParts(src) === 'year' ? 'ys' : 'chs';
+            const set = new Set(f[key][src] || []);
+            if (set.has(v)) set.delete(v); else set.add(v);
+            if (set.size) f[key][src] = [...set].sort((x, y) => x - y); else delete f[key][src];
+            if (set.size && !(f.inc.src || []).includes(src)) f.inc.src = (f.inc.src || []).concat([src]);
+            break;
+          }
+          case 'kind': form.kind = el.dataset.v; form.edited = false; break;
+          case 'order': form.order = el.dataset.v; break;
+          case 'sw': form.useDraft = !form.useDraft; form.edited = false; break;
+          case 'nd': form.ndays = U.clamp(form.ndays + +el.dataset.d, 1, 365); if (!form.edited) form.quotas = null; break;
+          case 'q': { const d = +el.dataset.d0; form.quotas[d] = Math.max(0, (form.quotas[d] || 0) + +el.dataset.d); form.edited = true; break; }
+          case 'even': form.edited = false; form.quotas = null; break;
+          case 'same': { const v = Math.max(0, (form.quotas[0] || 0) + +el.dataset.d); form.quotas = form.quotas.map(() => v); form.edited = true; break; }
+          case 'cancel': ui.st.cpForm = null; break;
+          case 'create': return createPlan(form);
+          default: return;
+        }
+        ui.refresh();
+        return;
+      }
+      const p = P.get(ui.st.cpShow) || P.active() || P.list()[0];
+      if (!p) return;
+      switch (a) {
+        case 'new': ui.st.cpForm = newForm(); ui.refresh(); return;
+        case 'today': case 'ahead': {
+          const g = progress(p);
+          let ids = g.queue;
+          if (a === 'ahead' || !ids.length) {
+            const next = g.t + 1 < p.days.length ? p.days[g.t + 1] : 10;
+            ids = g.ids.filter((id) => !S.hidden(id) && !(S.info(id).attempts || []).some((x) => x[0] * 1000 >= p.created)).slice(0, next);
+          }
+          if (!ids.length) { ui.toast('لا توجد أسئلة باقية في هذه الخطة'); return; }
+          UB.startSheet({ qids: ids, title: p.name + ' · اليوم ' + (Math.max(0, g.t) + 1), kind: 'practice', n: ids.length, plan: p.id });
+          return;
+        }
+        case 'pq': { const d = +el.dataset.d0; const days = p.days.slice(); days[d] = Math.max(0, days[d] + +el.dataset.d); P.update(p.id, { days }); break; }
+        case 'dayadd': { const days = p.days.concat([p.days[p.days.length - 1] || 10]); P.update(p.id, { days }); break; }
+        case 'dayrm': if (p.days.length > 1) P.update(p.id, { days: p.days.slice(0, -1) }); break;
+        case 'use': { const id = el.dataset.id; P.save(P.list().map((x) => Object.assign({}, x, { active: x.id === id }))); ui.st.cpShow = id; ui.toast('✓ صارت الخطة الفعّالة'); break; }
+        case 'show': ui.st.cpShow = el.dataset.id; break;
+        case 'ren': {
+          ui.prompt({ title: 'اسم الخطة', value: p.name, ok: 'حفظ' }).then((name) => { if (name && name.trim()) { P.update(p.id, { name: name.trim() }); ui.refresh(); } });
+          return;
+        }
+        case 'del': {
+          ui.confirm({ title: 'حذف الخطة؟', text: 'تُحذف الخطة فقط، ولا تتأثر إجاباتك.', ok: 'حذف', danger: true }).then((ok) => {
+            if (!ok) return;
+            const rest = P.list().filter((x) => x.id !== p.id);
+            if (p.active && rest.length) rest[0] = Object.assign({}, rest[0], { active: true });
+            P.save(rest);
+            ui.st.cpShow = null;
+            ui.refresh();
+          });
+          return;
+        }
+        default: return;
+      }
+      UB._agg = null;
+      ui.refresh();
+    },
+    input(k, el) {
+      const form = ui.st.cpForm;
+      const v = el.value === '' ? 0 : Math.max(0, Math.round(+el.value));
+      if (form) {
+        if (k === 'name') { form.name = el.value; return; }
+        if (k === 'nd') { form.ndays = U.clamp(v || 1, 1, 365); if (!form.edited) form.quotas = null; }
+        else if (k === 'q') { form.quotas[+el.dataset.d0] = v; form.edited = true; }
+        else if (k === 'same') { form.quotas = form.quotas.map(() => v); form.edited = true; }
+        clearTimeout(ui.st.cpT);
+        ui.st.cpT = setTimeout(() => ui.refresh(), 450);
+        return;
+      }
+      const p = P.get(ui.st.cpShow) || P.active();
+      if (p && k === 'pq') {
+        const days = p.days.slice();
+        days[+el.dataset.d0] = v;
+        P.update(p.id, { days });
+        clearTimeout(ui.st.cpT);
+        ui.st.cpT = setTimeout(() => ui.refresh(), 450);
+      }
+    },
+  };
+
+  function createPlan(form) {
+    const list = pool(form);
+    if (!list.length) { ui.toast('لا توجد أسئلة بهذه الاختيارات', 'bad'); return; }
+    const srcNames = (form.f.inc.src || []).map((s) => (B.sources[s] ? B.sources[s].name : s));
+    const parts = [];
+    for (const s in form.f.ys || {}) parts.push((B.sources[s] ? B.sources[s].name : s) + ' ' + form.f.ys[s].join('، '));
+    for (const s in form.f.chs || {}) parts.push((B.sources[s] ? B.sources[s].name : s) + ' Ch.' + form.f.chs[s].join(','));
+    const desc = (parts.length ? parts.join(' · ') : srcNames.length ? srcNames.join(' + ') : 'كل المصادر') + (form.useDraft ? ' · مع فلاتر إضافية' : '');
+    const name = (form.name || '').trim() || desc.slice(0, 40);
+    const id = 'cp' + U.uid(6);
+    const plan = { id, name, desc, kind: form.kind, order: form.order, created: Date.now(), start: form.start, days: form.quotas.slice(), ids: list.map((q) => q.id).join(','), active: true };
+    P.save(P.list().map((x) => Object.assign({}, x, { active: false })).concat([plan]));
+    ui.st.cpForm = null;
+    ui.st.cpShow = id;
+    UB._agg = null;
+    ui.toast('✓ حُفظت الخطة «' + name + '»', 'ok');
+    ui.refresh();
+  }
+})();
+
+</script><script>
 /* UroBank — standalone web app mode (outside Claude).
    Progress stays in the page's storage on the device; books and snapshots in IndexedDB; offline via a
    service worker; backup files through the share sheet; optional automatic copy to a private GitHub repo. */
@@ -5403,9 +5947,36 @@ button.stat { width: 100%; }
     await db.set('banks', id, text);
     if (same) return same;
     const entry = { id, name: meta.name, count: meta.count, srcs: meta.srcs, at: Date.now(), size: text.length };
+    if (meta.origin) entry.origin = meta.origin;
     S.docs.banks.list = list.concat([entry]);
     S.touch('banks');
     return entry;
+  };
+  UB.bankText = async (ub) => {
+    const t = await db.get('banks', ub.id);
+    if (t == null) throw new Error('missing');
+    return typeof t === 'string' ? t : JSON.stringify(t);
+  };
+  // a file to the share sheet ("Save to Files", or another app); else a plain download
+  S.shareFile = async function (text, filename) {
+    try {
+      const file = new File([text], filename, { type: 'application/json' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file] });
+        return { ok: true };
+      }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(file);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 10000);
+      return { ok: true };
+    } catch (e) {
+      if (e && e.name === 'AbortError') return { ok: false, reason: 'declined' };
+      if (e && e.name === 'NotAllowedError') return { ok: false, reason: 'gesture' };
+      return { ok: false, reason: 'error' };
+    }
   };
   S.removeBank = async function (entry) {
     try { await db.del('banks', entry.id); } catch (e) { console.warn(e); }
@@ -5743,7 +6314,7 @@ button.stat { width: 100%; }
     ui.applyTheme();
     ui.bind();
     const soon = (title) => ({ render: () => '<div class="view"><div class="vtop"><h1>' + title + '</h1></div><div class="empty"><div class="big">🛠</div>هذه الشاشة قيد البناء.</div></div>' });
-    const names = { plan: 'خطة اليوم', bank: 'بنك الأسئلة', mistakes: 'مراجعة الأخطاء', starred: 'المحفوظة', topics: 'ملخص المواضيع', stats: 'الإحصائيات', library: 'المصادر والاستيراد', 'needs-review': 'بحاجة لمراجعة', prefs: 'الإعدادات' };
+    const names = { plan: 'خطة اليوم', bank: 'بنك الأسئلة', mistakes: 'مراجعة الأخطاء', starred: 'المحفوظة', stats: 'الإحصائيات', library: 'المصادر والاستيراد', 'needs-review': 'بحاجة لمراجعة', prefs: 'الإعدادات' };
     for (const k in names) if (!UB.V[k]) UB.V[k] = soon(names[k]);
     ui.show();
     await B.load();
