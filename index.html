@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="UroBank">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#F4F1EA">
-<meta name="urobank-version" content="0cf845cd98">
+<meta name="urobank-version" content="392038488d">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -298,7 +298,9 @@ button.stat { width: 100%; }
 .qcol, .ecol { min-width: 0; }
 .ecol { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
 @media (min-width: 900px) and (min-aspect-ratio: 1/1) {
-  .qbody { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); gap: 24px; overflow: hidden; padding: 0 24px; }
+  .qbody { display: grid; grid-template-columns: calc(50% - 12px) calc(50% - 12px); gap: 24px; overflow: hidden; padding: 0 24px; transition: grid-template-columns .35s ease; }
+  .qbody.pre { grid-template-columns: calc(75% - 12px) calc(25% - 12px); }
+  .qbody.pre .ecol .placeholder { padding: 26px 14px; font-size: 14px; }
   .qcol, .ecol { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 18px 0 28px; min-height: 0; }
   .ecol { margin-top: 0; }
 }
@@ -538,6 +540,25 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
 .ntacts { display: flex; gap: 14px; justify-content: flex-end; align-items: center; }
 .ntsrc, .ntedit { background: none; border: 0; color: var(--pri); font-weight: 600; font-size: 13px; padding: 2px 0; cursor: pointer; font-family: var(--f); }
 .sheet textarea.mynotes { overflow: auto; max-height: 60vh; min-height: 220px; }
+
+@media (prefers-reduced-motion: reduce) { .qbody { transition: none !important; } }
+/* the correct answer, set by me (✏️) */
+.ansedit { display: flex; flex-direction: column; gap: 6px; }
+.ansopt { display: flex; align-items: flex-start; gap: 10px; text-align: start; padding: 9px 12px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); cursor: pointer; font: inherit; color: var(--ink); width: 100%; }
+.ansopt b { flex: none; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: var(--chip); font-family: var(--fe); }
+.ansopt .en { flex: 1; min-width: 0; line-height: 1.5; font-size: 14.5px; }
+.ansopt .mini { flex: none; align-self: center; }
+.ansopt.on { border-color: var(--ok); background: var(--okbg); }
+.ansopt.on b { background: var(--ok); color: #fff; }
+.tag.edited { background: var(--pri2); color: var(--pri); border-color: transparent; }
+.cwarn.okv { background: var(--pri2); border-color: var(--pri3); color: var(--ink); }
+/* eye protection: a warm layer over everything (less blue light); taps go through it */
+#eyef { position: fixed; inset: 0; pointer-events: none; z-index: 2147483000; background: rgb(255, 138, 30); mix-blend-mode: multiply; opacity: 0; transition: opacity .8s ease; }
+.eyebox .eyestr { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; color: var(--ink3); }
+.eyebox .eyestr input[type=range] { flex: 1; max-width: 280px; accent-color: #E8892B; }
+.eyebox .eyetime { display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
+.eyebox .eyetime label { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.eyebox .eyetime .inp { width: auto; min-width: 128px; }
 
 </style>
 </head>
@@ -930,7 +951,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
   const bucketOf = (qid) => 'b' + U.pad(U.fnv(String(qid)) % NB);
 
   const DEFAULT_PREFS = {
-    theme: 'light', fs: 1, explTab: 'full', hlShade: 25, display: 'clean', shuffle: true, hideTags: false,
+    theme: 'light', fs: 1, explTab: 'full', hlShade: 25, eye: 'off', eyeStr: 40, eyeFrom: '21:00', eyeTo: '06:00', display: 'clean', shuffle: true, hideTags: false,
     askConf: true, boardN: 100, boardMin: 120, examSec: 72, sessN: 40,
     sessMode: 'practice', showMistakeAns: false, timer: 'total', flow: 'step', heroHide: true,
   };
@@ -1061,6 +1082,16 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
     if (Object.keys(clean).length) st.o = clean; else delete st.o;
     changedQ(qid);
   };
+  // grade all past answers to a question again, for a corrected answer; returns how many changed
+  S.regrade = (qid, ans) => {
+    const st = S.st(qid);
+    if (!st || !st.a || !st.a.length || !ans) return 0;
+    const before = st.a;
+    st.a = regraded(before, ans);
+    const n = st.a.filter((x, i) => x !== before[i]).length;
+    if (n) changedQ(qid);
+    return n;
+  };
   S.setReviewed = (qid, v) => { const st = ensure(qid); if (v) st.r = 1; else delete st.r; changedQ(qid); };
 
   S.eachState = function (fn) {
@@ -1159,6 +1190,15 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
 
   /* ---------- merge ---------- */
   const atKey = (x) => x[0] + '|' + x[1];
+  // attempts graded again for answer `ans` (only those that chose an option)
+  const regraded = (list, ans) => (list || []).map((x) => {
+    if (!x || x[1] == null || x[1] === '') return x;
+    const ok = x[1] === ans ? 1 : 0;
+    if (x[2] === ok) return x;
+    const y = x.slice();
+    y[2] = ok;
+    return y;
+  });
   // the fields of a question's state that are taken whole from its newer copy (attempts are merged)
   const QF = ['s', 'h', 'n', 'hl', 'f', 'o', 'r'];
   function mergeQ(a, b) {
@@ -1172,6 +1212,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
     for (const x of older.a || []) map.set(atKey(x), x);
     for (const x of newer.a || []) map.set(atKey(x), x);
     out.a = [...map.values()].sort((p, q) => p[0] - q[0]);
+    if (out.o && out.o.ans) out.a = regraded(out.a, out.o.ans); // answers made elsewhere before the correction
     out.u = Math.max(a.u || 0, b.u || 0);
     return out;
   }
@@ -1848,6 +1889,13 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
     const s = B.sources[src];
     return s && s.kind === 'year' ? 'year' : s && s.kind === 'chapter' ? 'ch' : null;
   };
+  // the correct answer in use: the one I set (✏️), else the book's
+  B.ansOf = (q) => {
+    const st = UB.S.st(q.id);
+    const a = st && st.o && st.o.ans;
+    return a && q.opts.some((o) => o.k === a) ? a : q.ans;
+  };
+  B.ansEdited = (q) => B.ansOf(q) !== q.ans;
   B.optText = (q, k) => {
     const o = q.opts.find((x) => x.k === k);
     return o ? o.t : k;
@@ -2891,6 +2939,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
     // the highlight colors: one shade for the four, the same in every theme
     const sh = S.pref('hlShade');
     document.documentElement.style.setProperty('--hlL', (95 - 0.25 * Math.min(100, Math.max(0, sh == null || sh === '' ? 25 : +sh))).toFixed(1) + '%');
+    if (UB.EYE) UB.EYE.apply();
   };
 
   /* ---------- navigation ---------- */
@@ -3265,7 +3314,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
     const t = SE.qTime(s, q.id);
     s.qt[q.id] = t;
     ui.st.qStart = Date.now();
-    const ok = key === q.ans ? 1 : 0;
+    const ok = key === B.ansOf(q) ? 1 : 0;
     let ts = U.sec();
     const st = S.st(q.id);
     if (st && st.a.some((x) => x[0] === ts && x[1] === key)) ts += 1;
@@ -3297,7 +3346,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
       if (!a) continue;
       answered++;
       ans[qid] = a.k;
-      const isOk = a.k === q.ans;
+      const isOk = a.k === B.ansOf(q);
       if (isOk) { ok++; bySpec[sp][1]++; }
     }
     const n = SE.isExam(s) ? s.qids.length : answered;
@@ -3313,7 +3362,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
       const q = B.byId[qid];
       const a = s.ans[qid];
       if (!q || !a) continue;
-      const isOk = a.k === q.ans ? 1 : 0;
+      const isOk = a.k === B.ansOf(q) ? 1 : 0;
       a.ok = isOk;
       S.addAttempt(qid, [a.ts || U.sec(), a.k, isOk, Math.round((s.qt[qid] || 0) * 10) / 10, 'e', s.id, '', a.g ? 'g' : '']);
     }
@@ -3347,7 +3396,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
       const k = res.ans[qid];
       const st = S.st(qid);
       const at = st && st.a.find((x) => x[5] === res.id);
-      s.ans[qid] = { k, ok: k === q.ans ? 1 : 0, ts: at ? at[0] : 0, r: at ? at[6] || '' : '' };
+      s.ans[qid] = { k, ok: k === B.ansOf(q) ? 1 : 0, ts: at ? at[0] : 0, r: at ? at[6] || '' : '' };
     }
     ui.st.rsess = s;
     return s;
@@ -3503,6 +3552,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
     t.push('<span class="tag">' + q.words + ' words</span>');
     if (B.isDemo(q)) t.push('<span class="tag warn">تجريبي</span>');
     if (B.status(q) === 'review') t.push('<span class="tag warn">تصنيف غير مؤكد</span>');
+    if (B.ansEdited(q)) t.push('<span class="tag edited" title="عدّلتَ الإجابة الصحيحة لهذا السؤال">✏️ إجابة معدّلة</span>');
     return '<div class="qtags">' + t.join('') + '</div>';
   }
 
@@ -3543,7 +3593,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
       let cls = 'opt', mk = '', mkc = '';
       if (revealed) {
         cls += ' lock';
-        if (k === q.ans) { cls += ' ok'; mk = a && a.k === k ? 'إجابتك ✓' : 'الصحيحة ✓'; mkc = 'ok'; }
+        if (k === B.ansOf(q)) { cls += ' ok'; mk = a && a.k === k ? 'إجابتك ✓' : 'الصحيحة ✓'; mkc = 'ok'; }
         else if (a && a.k === k) { cls += ' bad'; mk = 'إجابتك ✕'; mkc = 'bad'; }
       } else {
         if (a && a.k === k) cls += ' picked';
@@ -3602,11 +3652,11 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
     if (tab !== 'notes' && tab !== 'both') tab = 'full';
     const demo = B.isDemo(q);
     let verdict;
-    if (!a) verdict = '<div class="verdict neutral"><div><b>— لم تُجب على هذا السؤال</b><span>الإجابة الصحيحة: ' + L[SE.order(s, q).indexOf(q.ans)] + '</span></div></div>';
+    if (!a) verdict = '<div class="verdict neutral"><div><b>— لم تُجب على هذا السؤال</b><span>الإجابة الصحيحة: ' + L[SE.order(s, q).indexOf(B.ansOf(q))] + '</span></div></div>';
     else if (a.ok) verdict = '<div class="verdict ok"><div><b>✓ إجابة صحيحة</b><span>' + (a.t ? 'استغرقت ' + U.dur(a.t) : '') + (a.g ? ' · كانت تخمينًا: يبقى السؤال في المراجعة' : '') + '</span></div></div>';
     else {
       const inf = S.info(q.id);
-      verdict = '<div class="verdict bad"><div><b>✕ إجابة خاطئة</b><span>' + (s.review ? 'الإجابة الصحيحة: ' + L[SE.order(s, q).indexOf(q.ans)] : 'أُضيف إلى قائمة الأخطاء · أخطأت فيه ' + U.nTimes(inf.wrong)) + '</span></div></div>';
+      verdict = '<div class="verdict bad"><div><b>✕ إجابة خاطئة</b><span>' + (s.review ? 'الإجابة الصحيحة: ' + L[SE.order(s, q).indexOf(B.ansOf(q))] : 'أُضيف إلى قائمة الأخطاء · أخطأت فيه ' + U.nTimes(inf.wrong)) + '</span></div></div>';
     }
     const seg = '<div class="seg"><button class="' + (tab === 'notes' ? 'on' : '') + '" data-a="tab" data-v="notes"' + qa + '>📝 ملاحظتي' + (inf0.note ? '<span class="ndot" title="فيها ملاحظات"></span>' : '') + '</button>' +
       '<button class="' + (tab === 'full' ? 'on' : '') + '" data-a="tab" data-v="full"' + qa + '>📖 الشرح الكامل</button>' +
@@ -3616,7 +3666,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
     const full = '<div class="full"><h5><span class="ens">' + (demo ? 'Full explanation (sample)' : 'Full explanation (from the book)') + '</span><span style="font-weight:500;font-size:12.5px;color:var(--ink3)">' + (demo ? 'شرح تجريبي' : 'الشرح الكامل') + '</span></h5>' + (q.expl ? UB.HL.bar() + UB.HL.box(q) : '<div class="en">' + paras(q.expl) + '</div>') + imgsHtml(q, 'expl') + refs + page + '</div>';
     const body = tab === 'notes' ? UB.HL.notesHtml(q) : tab === 'both' ? UB.HL.notesHtml(q) + full : full;
     const cnote = q.conflict ? B.reviewNote(q) : '';
-    const warn = q.conflict ? '<div class="cwarn">⚠️ <b>انتبه: ملف هذا السؤال يقول إن الجواب في المفتاح لا يتطابق مع الشرح.</b>' + (cnote ? '<div class="en">' + esc(cnote) + '</div>' : '') + '</div>' : '';
+    const warn = B.ansEdited(q) ? '<div class="cwarn okv">✏️ <b>عدّلتَ الإجابة الصحيحة إلى «' + L[SE.order(s, q).indexOf(B.ansOf(q))] + '»</b> · في الكتاب: «' + L[SE.order(s, q).indexOf(q.ans)] + '»</div>' : q.conflict ? '<div class="cwarn">⚠️ <b>انتبه: ملف هذا السؤال يقول إن الجواب في المفتاح لا يتطابق مع الشرح.</b>' + (cnote ? '<div class="en">' + esc(cnote) + '</div>' : '') + '</div>' : '';
     return verdict + warn + seg + body;
   }
 
@@ -3665,7 +3715,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
         (revealed && exam && a && !a.ok && s.review ? '<div style="margin-top:14px">' + reasonsHtml(s, q) + '</div>' : '') +
         '</section>';
       const ecol = '<section class="ecol" data-scroll="e">' + (revealed ? explHtml(s, q) :
-        '<div class="placeholder">' + (exam ? '<div class="big">⏱</div>وضع الامتحان: الإجابات والشرح تظهر بعد التسليم.' : '<div class="big">👆</div>اختر إجابتك… الملخص والشرح الكامل سيظهران هنا.') +
+        '<div class="placeholder">' + (exam ? '<div class="big">⏱</div>وضع الامتحان: الإجابات والشرح تظهر بعد التسليم.' : '<div class="big">👆</div>اختر إجابتك… الشرح الكامل وملاحظتي سيظهران هنا.') +
         '<div style="margin-top:10px" class="note">لوحة المفاتيح: <span class="kbd">A–E</span> اختيار · <span class="kbd">Enter</span> التالي · <span class="kbd">Space</span> الشرح</div></div>') + '</section>';
       const last = s.i === n - 1;
       const nextLabel = last ? (exam && live ? 'تسليم الامتحان' : s.review ? 'العودة للنتيجة' : 'إنهاء الجلسة') : 'التالي ›';
@@ -3676,16 +3726,25 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
         '<button class="ib' + (inf.hero ? ' on' : '') + '" data-a="hero" title="Hero: مستحيل أن أخطئ فيه" aria-label="Hero">🦸</button>' +
         '<button class="ib' + (inf.note ? ' on' : '') + '" data-a="note" title="ملاحظتي" aria-label="ملاحظة">📝</button>' +
         '<button class="ib' + (flagOn ? ' on' : '') + '" data-a="flag" title="' + (exam && live ? 'علّمه للرجوع إليه قبل التسليم' : 'معلَّم للرجوع إليه') + '" aria-label="تعليم">🚩</button>' +
-        '<button class="ib" data-a="edit" title="تعديل التصنيف / إبلاغ عن خطأ" aria-label="تعديل">' + ui.icon('edit') + '</button>' +
+        '<button class="ib" data-a="edit" title="تعديل الإجابة الصحيحة أو التصنيف" aria-label="تعديل">' + ui.icon('edit') + '</button>' +
         '<div style="flex:1"></div>' +
         '<span class="hint"><span class="kbd">A–E</span> اختيار <span class="kbd">Enter</span> التالي <span class="kbd">S</span> حفظ <span class="kbd">H</span> سجلي</span>' +
         (exam && live && !last ? '<button class="btn s" data-a="submit">تسليم</button>' : '') +
         '<button class="btn p" data-a="next" style="min-width:170px">' + nextLabel + '</button></footer>';
-      return '<div class="study">' + head + '<div class="qbody">' + qcol + ecol + '</div>' + foot + '</div>';
+      // wide screens: the question takes 3/4 until it is answered, then the screen splits in halves (a short slide)
+      let lay = revealed ? '' : ' pre';
+      if (revealed && ui.st.preQ === q.id) { lay = ' pre'; ui.st.layAnim = true; }
+      ui.st.preQ = revealed ? null : q.id;
+      return '<div class="study">' + head + '<div class="qbody' + lay + '">' + qcol + ecol + '</div>' + foot + '</div>';
     },
     after() {
       const s = SE.cur();
       clearInterval(ticker);
+      if (ui.st.layAnim) {
+        ui.st.layAnim = false;
+        const qb = document.querySelector('.qbody.pre');
+        if (qb) requestAnimationFrame(() => requestAnimationFrame(() => qb.classList.remove('pre')));
+      }
       if (s && SE.live(s) && s.timer.kind !== 'none') {
         if (!ui.st.tStart) SE.resume(s);
         ticker = setInterval(() => {
@@ -3791,7 +3850,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
         }
         case 'hlc': ui.st.hlColor = ui.st.hlColor === el.dataset.v ? '' : el.dataset.v; UB.HL.cancel(); ui.refresh(); return;
         case 'hlmark': { const box = el.closest('.hlbox'); if (box) UB.HL.menu(box.dataset.q, +el.dataset.h); return; }
-        case 'edit': if (q) UB.editQuestion(q, () => ui.refresh()); return;
+        case 'edit': if (q) UB.editQuestion(q, () => ui.refresh(), SE.order(s, q)); return;
         case 'hist':
           if (!q) return;
           if (SE.locked(s)) { ui.toast('🔒 "سجلي" مقفل أثناء الامتحان المؤقت حتى التسليم'); return; }
@@ -3888,7 +3947,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
       '<button class="ib' + (inf.note ? ' on' : '') + '" data-a="note"' + qa + ' title="ملاحظتي" aria-label="ملاحظة">📝</button>' +
       '<button class="ib' + (flagOn ? ' on' : '') + '" data-a="flag"' + qa + ' title="تعليم" aria-label="تعليم">🚩</button>' +
       '<button class="ib" data-a="hist"' + qa + (locked ? ' style="opacity:.45"' : '') + ' title="سجلي" aria-label="سجلي">🕘</button>' +
-      '<button class="ib" data-a="edit"' + qa + ' title="تعديل التصنيف / إبلاغ عن خطأ" aria-label="تعديل">' + ui.icon('edit') + '</button></div>';
+      '<button class="ib" data-a="edit"' + qa + ' title="تعديل الإجابة الصحيحة أو التصنيف" aria-label="تعديل">' + ui.icon('edit') + '</button></div>';
     return '<article class="qcard' + (revealed ? ' done' : '') + (a && !revealed ? ' picked' : '') + '" id="qc' + i + '" data-qi="' + i + '">' +
       '<div class="qcard-h"><span class="qn ens">Q ' + (i + 1) + '</span>' + tools + '</div>' +
       tagsHtml(s, q) + priorBadges(s, q, revealed, i) +
@@ -3987,7 +4046,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
         const a = s.ans[id];
         const q = B.byId[id];
         let c = '';
-        if (a) c = exam && live ? 'ans' : q && a.k === q.ans ? 'ok' : 'bad';
+        if (a) c = exam && live ? 'ans' : q && a.k === B.ansOf(q) ? 'ok' : 'bad';
         if (i === s.i) c += ' cur';
         if (s.flags[id] || (!exam && S.info(id).flag)) c += ' fl';
         return '<button class="' + c + '" data-a="jump" data-i="' + i + '">' + (i + 1) + '</button>';
@@ -4051,6 +4110,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
       return ui.sh('حجم الخط والمظهر') +
         '<div class="lbl" style="font-weight:700;margin-bottom:8px">حجم خط السؤال</div><div class="row"><div class="stepper"><button class="sb" data-a="fs" data-d="-0.05">−</button><span class="st ens" style="min-width:56px;text-align:center;font-weight:700">' + Math.round(fs * 100) + '%</span><button class="sb" data-a="fs" data-d="0.05">+</button></div><button class="chip" data-a="fs0">إعادة 100%</button></div>' +
         '<div class="lbl" style="font-weight:700;margin:16px 0 8px">المظهر</div><div class="seg"><button class="' + (th === 'light' ? 'on' : '') + '" data-a="th" data-v="light">☀︎ فاتح</button><button class="' + (th === 'sepia' ? 'on' : '') + '" data-a="th" data-v="sepia">📜 بيج للقراءة</button><button class="' + (th === 'dark' ? 'on' : '') + '" data-a="th" data-v="dark">☾ داكن</button></div>' +
+        '<div class="lbl" style="font-weight:700;margin:16px 0 8px">🌙 حماية العين</div>' + UB.EYE.html() +
         '<div class="lbl" style="font-weight:700;margin:16px 0 8px">يظهر بعد الإجابة أولًا</div>' + ui.explFirstSeg(et) +
         '<div class="lbl" style="font-weight:700;margin:16px 0 8px">طريقة عرض الأسئلة</div><div class="seg"><button class="' + (fl !== 'scroll' ? 'on' : '') + '" data-a="flow" data-v="step">سؤال بسؤال</button><button class="' + (fl === 'scroll' ? 'on' : '') + '" data-a="flow" data-v="scroll">↕ تمرير متواصل</button></div>' +
         '<div class="acts"><button class="btn p" data-a="close">تم</button></div>';
@@ -4058,7 +4118,10 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
     let fl = flowOf(SE.cur()) === 'scroll' || (!SE.cur() && S.pref('flow') === 'scroll') ? 'scroll' : 'step';
     ui.sheet({
       cls: 'sm', html: html(),
+      onInput: (k, el) => { UB.EYE.input(k, el); },
+      onChange: (k, el, e, h) => { if (UB.EYE.change(k, el)) h.update(html()); },
       onAct: (a, el, e, h) => {
+        if (UB.EYE.act(a, el)) { h.update(html()); return; }
         if (a === 'flow') {
           fl = el.dataset.v === 'scroll' ? 'scroll' : 'step';
           S.setPref('flow', fl);
@@ -4081,23 +4144,40 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
   };
 
   /* ---------- edit classification / report ---------- */
-  UB.editQuestion = function (q, done) {
+  // the session I am in, graded again for this question's answer in use
+  function regradeSession(q) {
+    const s = SE.cur();
+    const a = s && s.ans[q.id];
+    if (!a || a.k == null || (!('ok' in a) && !s.done)) return;
+    a.ok = a.k === B.ansOf(q) ? 1 : 0;
+    SE.save(s);
+  }
+  UB.editQuestion = function (q, done, order) {
     const e = B.eff(q);
     const inf = S.info(q.id);
-    const st = { spec: e.spec || '', topic: e.topic || '', sub: e.sub || '', sex: e.sex || 'none', age: e.age != null ? e.age : '', rev: inf.rev || B.status(q) === 'ok', issue: (inf.ov && inf.ov.issue) || '' };
+    const keys = (order && order.length ? order : q.opts.map((o) => o.k)).filter((k) => q.opts.some((o) => o.k === k));
+    const ans0 = B.ansOf(q);
+    const st = { ans: ans0, spec: e.spec || '', topic: e.topic || '', sub: e.sub || '', sex: e.sex || 'none', age: e.age != null ? e.age : '', rev: inf.rev || B.status(q) === 'ok', issue: (inf.ov && inf.ov.issue) || '' };
+    const letter = (k) => L[keys.indexOf(k)] || k;
     const html = () => {
       const sp = UB.tx.get(st.spec);
       const tp = UB.tx.get(st.topic);
       const opt = (v, l, cur) => '<option value="' + esc(v) + '"' + (v === cur ? ' selected' : '') + '>' + esc(l) + '</option>';
-      return ui.sh('تعديل بيانات السؤال', 'التعديل يخصّك ويُحفظ مع سجلك، ولا يغيّر ملف الكتاب') +
+      return ui.sh('تعديل السؤال', 'التعديل يخصّك ويُحفظ مع سجلك، ولا يغيّر ملف الكتاب') +
         '<div class="note en" style="margin-bottom:12px;-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden">' + esc(q.stem) + '</div>' +
+        '<div class="lbl" style="font-weight:700;margin:4px 0 8px">الإجابة الصحيحة</div>' +
+        '<div class="ansedit">' + keys.map((k) => '<button class="ansopt' + (st.ans === k ? ' on' : '') + '" data-a="ans" data-v="' + esc(k) + '"><b>' + letter(k) + '</b><span class="en">' + esc(B.optText(q, k)) + '</span>' +
+          (k === q.ans ? '<span class="mini">إجابة الكتاب</span>' : '') + '</button>').join('') + '</div>' +
+        (st.ans !== q.ans
+          ? '<div class="note" style="margin:8px 2px 14px">سيُصحَّح هذا السؤال على «' + letter(st.ans) + '»، وتُصحَّح إجاباتك السابقة عليه من جديد. في الكتاب: «' + letter(q.ans) + '».</div>'
+          : '<div style="height:14px"></div>') +
         '<div class="formgrid">' +
         '<label>التخصص<select class="inp" data-c="spec">' + opt('', '—', st.spec) + UB.tx.specs.map((x) => opt(x.id, x.en + ' — ' + x.ar, st.spec)).join('') + '</select></label>' +
         '<label>الموضوع<select class="inp" data-c="topic">' + opt('', '—', st.topic) + (sp ? sp.topics.map((x) => opt(x.id, x.en, st.topic)).join('') : '') + '</select></label>' +
         '<label>الموضوع الفرعي<select class="inp" data-c="sub">' + opt('', '—', st.sub) + (tp ? tp.subs.map((x) => opt(x.id, x.en, st.sub)).join('') : '') + '</select></label>' +
         '<label>الجنس<select class="inp" data-c="sex">' + UB.FAC.sex.v.map(([v, l]) => opt(v, l, st.sex)).join('') + '</select></label>' +
         '<label>العمر بالسنوات (0.5 = 6 أشهر)<input class="inp" type="number" step="0.1" inputmode="decimal" data-i="age" value="' + esc(st.age) + '"></label>' +
-        '<label>ملاحظة عن خطأ في السؤال (اختياري)<input class="inp" data-i="issue" value="' + esc(st.issue) + '" placeholder="مثلًا: الإجابة في الكتاب C"></label>' +
+        '<label>ملاحظة عن خطأ في السؤال (اختياري)<input class="inp" data-i="issue" value="' + esc(st.issue) + '" placeholder="مثلًا: الاختيار B مكتوب خطأ"></label>' +
         '</div>' +
         ui.switchRow('rev', '✓ التصنيف صحيح (تمت المراجعة)', 'يزيل السؤال من قائمة "بحاجة لمراجعة"', st.rev) +
         '<div class="acts">' + (inf.ov ? '<button class="btn dg" data-a="reset" style="margin-inline-end:auto">إرجاع بيانات الكتاب</button>' : '') + '<button class="btn g" data-a="close">إلغاء</button><button class="btn p" data-a="save">حفظ</button></div>';
@@ -4112,8 +4192,19 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
       },
       onInput: (k, el) => { st[k] = el.value; },
       onAct: (a, el, e, h) => {
+        if (a === 'ans') { st.ans = el.dataset.v; h.update(html()); return; }
         if (a === 'sw') { st.rev = !st.rev; h.update(html()); return; }
-        if (a === 'reset') { S.setOverride(q.id, null); h.close(); ui.toast('أُرجعت بيانات الكتاب'); if (done) done(); return; }
+        if (a === 'reset') {
+          S.setOverride(q.id, null);
+          q._eff = null;
+          const n = ans0 !== q.ans ? S.regrade(q.id, q.ans) : 0;
+          regradeSession(q);
+          h.close();
+          UB._agg = null;
+          ui.toast('أُرجعت بيانات الكتاب' + (n ? ' · أُعيد تصحيح إجاباتك السابقة' : ''));
+          if (done) done();
+          return;
+        }
         if (a === 'save') {
           const o = {};
           const base = q.c;
@@ -4124,11 +4215,16 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
           if (ageV !== (base.age != null ? base.age : null)) o.age = ageV === null ? null : ageV;
           if (st.issue) o.issue = st.issue;
           if (o.age === null) o.age = 'none';
+          if (st.ans !== q.ans) o.ans = st.ans;
           S.setOverride(q.id, o);
-          S.setReviewed(q.id, st.rev);
+          const changed = st.ans !== ans0;
+          const n = changed ? S.regrade(q.id, st.ans) : 0;
+          S.setReviewed(q.id, st.rev || changed);
+          if (changed) regradeSession(q);
           q._eff = null;
           h.close();
-          ui.toast('حُفظ التعديل');
+          UB._agg = null;
+          ui.toast(changed ? 'حُفظ: الإجابة الصحيحة الآن «' + letter(st.ans) + '»' + (n ? ' · أُعيد تصحيح إجاباتك السابقة' : '') : 'حُفظ التعديل', 'ok');
           if (done) done();
         }
       },
@@ -4395,7 +4491,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
         const q = B.byId[id];
         if (!q) return '';
         const k = r.ans ? r.ans[id] : undefined;
-        const st = k === undefined ? '<span class="mini">— بلا إجابة</span>' : k === q.ans ? '<span class="mini ok">✓ صحيح</span>' : '<span class="mini bad">✕ خطأ</span>';
+        const st = k === undefined ? '<span class="mini">— بلا إجابة</span>' : k === B.ansOf(q) ? '<span class="mini ok">✓ صحيح</span>' : '<span class="mini bad">✕ خطأ</span>';
         return '<button class="list-row" data-a="rev" data-i="' + i + '"><span class="ens" style="font-weight:700;min-width:28px">' + (i + 1) + '</span><div class="grow"><div class="qs en">' + esc(q.stem) + '</div><div class="m">' + st + '<span class="mini pri">' + esc(B.srcLabel(q)) + '</span></div></div></button>';
       }).join('');
       const wrongN = (r.qids || []).filter((id) => B.byId[id] && r.ans && r.ans[id] !== undefined && r.ans[id] !== B.byId[id].ans).length;
@@ -4787,7 +4883,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
             (i.active ? '<span class="mini">صحيح متتالٍ ' + i.streak + '/2</span>' : '<span class="mini ok">خرج من القائمة</span>') +
             (i.due && i.due > now && i.active ? '<span class="mini">المراجعة: ' + U.date(i.due) + '</span>' : i.due && i.due <= now ? '<span class="mini bad">مستحق الآن</span>' : '') +
             [...i.reasons].map((r) => '<span class="mini">' + esc(UB.facLabel('reason', r)) + '</span>').join('') + '</div>' +
-            (showAns && lastWrong ? '<div class="note en" style="margin-top:6px"><span style="color:var(--bad)">✕ Your answer: ' + esc(B.optText(q, lastWrong[1])) + '</span><br><span style="color:var(--ok)">✓ Correct: ' + esc(B.optText(q, q.ans)) + '</span></div>' : '');
+            (showAns && lastWrong ? '<div class="note en" style="margin-top:6px"><span style="color:var(--bad)">✕ Your answer: ' + esc(B.optText(q, lastWrong[1])) + '</span><br><span style="color:var(--ok)">✓ Correct: ' + esc(B.optText(q, B.ansOf(q))) + '</span></div>' : '');
           return ui.qRow(q, extra, 'data-a="open" data-i="' + idx + '"');
         }).join('');
         const sp0 = tx.get(sp);
@@ -5504,6 +5600,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
         '<div class="card pad"><div class="sec"><h3>القراءة</h3></div>' +
         '<div class="lbl" style="font-weight:600;margin-bottom:6px">حجم خط السؤال</div><div class="row"><div class="stepper"><button class="sb" data-a="fs" data-d="-0.05">−</button><span class="st ens" style="min-width:56px;text-align:center;font-weight:700">' + Math.round(fs * 100) + '%</span><button class="sb" data-a="fs" data-d="0.05">+</button></div></div>' +
         '<div class="lbl" style="font-weight:600;margin:14px 0 6px">المظهر</div>' + seg('th', th, [['light', '☀︎ فاتح'], ['sepia', '📜 بيج'], ['dark', '☾ داكن']]) +
+        '<div class="lbl" style="font-weight:600;margin:14px 0 6px">🌙 حماية العين</div>' + UB.EYE.html() +
         '<div class="lbl" style="font-weight:600;margin:14px 0 6px">يظهر بعد الإجابة أولًا</div>' + ui.explFirstSeg(et) + '</div>' +
         '<div class="card pad"><div class="sec"><h3>الجلسات</h3></div>' +
         '<div class="lbl" style="font-weight:600;margin-bottom:6px">طريقة عرض الأسئلة</div>' + seg('flow', S.pref('flow') === 'scroll' ? 'scroll' : 'step', [['step', 'سؤال بسؤال'], ['scroll', '↕ تمرير متواصل']]) +
@@ -5535,6 +5632,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
         '</div></div></div>';
     },
     act(a, el) {
+      if (UB.EYE.act(a, el)) return;
       if (UB.pwaAct && UB.pwaAct(a, el)) return;
       switch (a) {
         case 'fs': S.setPref('fs', Math.round(U.clamp((S.pref('fs') || 1) + +el.dataset.d, 0.8, 1.6) * 100) / 100); ui.applyTheme(); return;
@@ -5574,6 +5672,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
       }
     },
     input(k, el) {
+      if (UB.EYE.input(k, el)) return;
       if (k !== 'pref') return;
       const v = parseInt(el.value, 10);
       if (isNaN(v)) return;
@@ -5582,6 +5681,7 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
       ui.st.pT = setTimeout(() => S.setPref(key, U.clamp(v, 5, 900)), 500);
     },
     change(k, el) {
+      if (UB.EYE.change(k, el)) return;
       if (k !== 'restore' || !el.files || !el.files[0]) return;
       const file = el.files[0];
       el.value = '';
@@ -6367,6 +6467,96 @@ textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-
       if (a === 'open') { const i = ids.indexOf(el.dataset.id); UB.startList(ids, 'ملاحظاتي', 'practice', Math.max(0, i)); return; }
       if (a === 'start' && ids.length) UB.startSheet({ qids: ids, title: 'ملاحظاتي', kind: 'practice' });
     },
+  };
+})();
+
+</script><script>
+/* UroBank — eye protection: a warm layer over the whole app (less blue light, like Night Shift).
+   Off, on, or by the clock (from–to, also past midnight); its strength is one slider. */
+(function () {
+  'use strict';
+  const UB = window.UB;
+  const U = UB.U, S = UB.S;
+  const EYE = (UB.EYE = {});
+  const DEF = { str: 40, from: '21:00', to: '06:00' };
+  const valid = (t) => (/^\d{1,2}:\d{2}$/.test(t || '') ? t : null);
+  const mins = (t) => { const p = t.split(':'); return +p[0] * 60 + +p[1]; };
+  function get() {
+    const m = S.pref('eye');
+    const sv = S.pref('eyeStr');
+    return {
+      mode: m === 'on' || m === 'auto' ? m : 'off',
+      str: U.clamp(sv == null || sv === '' ? DEF.str : +sv, 0, 100),
+      from: valid(S.pref('eyeFrom')) || DEF.from,
+      to: valid(S.pref('eyeTo')) || DEF.to,
+    };
+  }
+  EYE.get = get;
+  // is the clock inside [from, to)? (21:00 → 06:00 crosses midnight)
+  EYE.inSpan = (now, from, to) => {
+    const n = now.getHours() * 60 + now.getMinutes(), a = mins(from), b = mins(to);
+    if (a === b) return true;
+    return a < b ? n >= a && n < b : n >= a || n < b;
+  };
+  EYE.active = () => { const c = get(); return c.mode === 'on' || (c.mode === 'auto' && EYE.inSpan(new Date(), c.from, c.to)); };
+  EYE.alpha = (str) => 0.06 + 0.34 * (U.clamp(+str, 0, 100) / 100);
+
+  let layer = null;
+  EYE.apply = function (str) {
+    if (!document.body) return;
+    if (!layer) {
+      layer = document.createElement('div');
+      layer.id = 'eyef';
+      layer.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(layer);
+    }
+    const on = EYE.active();
+    layer.style.opacity = on ? EYE.alpha(str != null ? str : get().str).toFixed(3) : '0';
+    document.documentElement.classList.toggle('eyeon', on);
+  };
+  // the clock: look each minute, and whenever the app comes back to the screen
+  setInterval(() => EYE.apply(), 60000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) EYE.apply(); });
+
+  const fmt = (t) => { const p = t.split(':'); let h = +p[0]; const pm = h >= 12; h = h % 12 || 12; return h + ':' + p[1] + (pm ? ' م' : ' ص'); };
+  // the controls, for the settings page and the Aa sheet
+  EYE.html = function () {
+    const c = get();
+    const seg = '<div class="seg">' + [['off', 'إيقاف'], ['on', 'تشغيل'], ['auto', '⏰ بالوقت']]
+      .map(([v, l]) => '<button class="' + (c.mode === v ? 'on' : '') + '" data-a="eye" data-v="' + v + '">' + l + '</button>').join('') + '</div>';
+    let more = '';
+    if (c.mode !== 'off') more += '<label class="eyestr"><span>خفيف</span><input type="range" min="0" max="100" step="1" value="' + c.str + '" data-i="eyestr" aria-label="قوة الفلتر"><span>قوي</span></label>';
+    if (c.mode === 'auto') {
+      more += '<div class="eyetime"><label>من <input type="time" class="inp" value="' + c.from + '" data-c="eyefrom"></label>' +
+        '<label>إلى <input type="time" class="inp" value="' + c.to + '" data-c="eyeto"></label></div>';
+    }
+    const st = c.mode === 'off' ? 'فلتر دافئ يقلّل الضوء الأزرق، مثل Night Shift.'
+      : c.mode === 'on' ? 'يعمل الآن.'
+      : (EYE.active() ? 'يعمل الآن · ' : 'متوقف الآن · ') + 'يعمل كل يوم من ' + fmt(c.from) + ' إلى ' + fmt(c.to) + '.';
+    return '<div class="eyebox">' + seg + more + '<div class="note" style="margin-top:8px">' + st + '</div></div>';
+  };
+  // shared handlers: each returns true when it handled the event
+  EYE.act = function (a, el) {
+    if (a !== 'eye') return false;
+    S.setPref('eye', el.dataset.v);
+    EYE.apply();
+    return true;
+  };
+  let t = null;
+  EYE.input = function (k, el) {
+    if (k !== 'eyestr') return false;
+    const v = +el.value;
+    EYE.apply(v);
+    clearTimeout(t);
+    t = setTimeout(() => S.setPref('eyeStr', v), 400);
+    return true;
+  };
+  EYE.change = function (k, el) {
+    if (k !== 'eyefrom' && k !== 'eyeto') return false;
+    if (!valid(el.value)) return true;
+    S.setPref(k === 'eyefrom' ? 'eyeFrom' : 'eyeTo', el.value);
+    EYE.apply();
+    return true;
   };
 })();
 
