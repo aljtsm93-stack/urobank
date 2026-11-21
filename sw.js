@@ -1,6 +1,6 @@
 /* UroBank service worker: keeps the app available without internet.
    The app shell is cached at install; a new version arrives when this file changes. */
-const VERSION = 'urobank-7c35d32cda';
+const VERSION = 'urobank-0cf845cd98';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 const LAZY = ['pdf.min.js', 'pdf.worker.min.js'];
 

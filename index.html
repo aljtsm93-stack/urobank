@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="UroBank">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#F4F1EA">
-<meta name="urobank-version" content="7c35d32cda">
+<meta name="urobank-version" content="0cf845cd98">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -496,47 +496,48 @@ button.stat { width: 100%; }
 .sparts .chip { max-width: 100%; white-space: normal; text-align: start; line-height: 1.35; padding-top: 7px; padding-bottom: 7px; }
 .sparts .chip .t { overflow-wrap: anywhere; }
 
-/* highlighter (ملاحظتي): fixed colors, the same in light, sepia and dark; the text on them is always dark */
+/* highlighter: four light colors with one shade (--hlL, set from the settings), the same in light, sepia and dark;
+   the text on them is always dark */
+:root { --hlL: 88.8%; }
 mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
-.hl-y { background: #FFE45C !important; }
-.hl-g { background: #A8EC8E !important; }
-.hl-p { background: #FFB2D5 !important; }
-.hl-b { background: #A3D8FF !important; }
+.hl-y { background: hsl(50, 100%, var(--hlL)) !important; }
+.hl-g { background: hsl(110, 60%, var(--hlL)) !important; }
+.hl-p { background: hsl(330, 100%, var(--hlL)) !important; }
+.hl-b { background: hsl(205, 100%, var(--hlL)) !important; }
 .hlbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 12px; padding: 8px 12px; border-radius: 12px; background: var(--chip); border: 1px solid var(--line2); }
 .hlbar .hlpen { font-weight: 700; font-size: 13.5px; color: var(--ink); }
-.hlc { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,.2); padding: 0; flex: none; cursor: pointer; }
+.hlc { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,.22); padding: 0; flex: none; cursor: pointer; }
 .hlc.on { box-shadow: 0 0 0 3px var(--card), 0 0 0 5.5px var(--ink); }
-.hlhint { font-size: 12.5px; color: var(--ink3); line-height: 1.5; }
+.hlshade { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink3); }
+.hlshade input[type=range] { width: 110px; accent-color: var(--pri); }
+.hlhint { font-size: 12.5px; color: var(--ink3); line-height: 1.5; flex-basis: 100%; }
 .hlbox.hlon, .hlbox.hlon * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .hlbox.hlon { cursor: text; }
 .hlbox mark.hl[data-a] { cursor: pointer; }
 .hlprev { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
-.hlprev > div { position: fixed; opacity: .55; border-radius: 3px; }
-.notesbox { display: flex; flex-direction: column; gap: 10px; }
-.mynote { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--card); }
-.mynote .h { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
-.mynote .t { line-height: 1.8; }
-.hllist { display: flex; flex-direction: column; gap: 8px; }
-.hlitem { display: flex; align-items: flex-start; gap: 8px; }
-.hlitem .en { line-height: 1.95; min-width: 0; }
-.hlitem .x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink2); cursor: pointer; }
-.nonotes { color: var(--ink2); line-height: 1.8; font-size: 14.5px; }
+.hlprev > div { position: fixed; opacity: .6; border-radius: 3px; }
 .hlq { line-height: 1.95; max-height: 40vh; overflow: auto; }
-.seg .cnt { display: inline-block; min-width: 18px; padding: 0 5px; margin-inline-start: 4px; border-radius: 9px; background: #FFE45C; color: #161616; font-size: 11.5px; font-weight: 700; line-height: 18px; font-family: var(--fe); }
+.seg .ndot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--pri); margin-inline-start: 6px; vertical-align: 2px; }
+/* «ملاحظتي»: plain text the user writes in, each line in its own direction (Arabic or English) */
+.notesbox { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+textarea.mynotes { width: 100%; min-height: 120px; resize: none; overflow: hidden; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--ink);
+  font-family: var(--fe); font-size: calc(17px * var(--fs)); line-height: 1.85; unicode-bidi: plaintext; text-align: start; -webkit-user-select: text; user-select: text; }
+textarea.mynotes:focus { outline: none; border-color: var(--pri); box-shadow: 0 0 0 3px var(--pri2); }
+textarea.mynotes::placeholder { color: var(--ink3); font-family: var(--f); font-size: 14.5px; }
+.nhint { font-size: 12px; color: var(--ink3); }
 /* «ملاحظاتي» page */
-.cdot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: -2px; border: 1px solid rgba(0,0,0,.18); }
-.ntchips { margin-bottom: 12px; align-items: center; }
 .ntlist { padding: 6px 16px 14px; }
 .ntspec + .ntspec { border-top: 1px solid var(--line); margin-top: 6px; }
 .ntspec h2 { display: flex; align-items: center; gap: 8px; font-size: 17px; margin: 14px 0 4px; }
 .ntspec h2 .sdot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
 .ntspec h2 .n { font-size: 12.5px; font-weight: 500; color: var(--ink3); margin-inline-start: auto; }
 .ntspec h3 { font-size: 14px; color: var(--ink2); margin: 12px 0 6px; font-weight: 600; }
-.ntq { padding: 8px 0 10px; border-bottom: 1px dashed var(--line); display: flex; flex-direction: column; gap: 6px; }
+.ntq { padding: 10px 0 12px; border-bottom: 1px dashed var(--line); display: flex; flex-direction: column; gap: 8px; }
 .ntq:last-child { border-bottom: 0; }
-.ntx { line-height: 1.95; font-size: calc(15px * var(--fs)); }
-.ntw { background: var(--chip); border-radius: 10px; padding: 8px 10px; line-height: 1.7; font-size: 14px; }
-.ntsrc { align-self: flex-end; background: none; border: 0; color: var(--pri); font-weight: 600; font-size: 13px; padding: 2px 0; cursor: pointer; font-family: var(--fe); }
+.nttext { white-space: pre-wrap; unicode-bidi: plaintext; text-align: start; font-family: var(--fe); font-size: calc(16px * var(--fs)); line-height: 1.85; color: var(--ink); }
+.ntacts { display: flex; gap: 14px; justify-content: flex-end; align-items: center; }
+.ntsrc, .ntedit { background: none; border: 0; color: var(--pri); font-weight: 600; font-size: 13px; padding: 2px 0; cursor: pointer; font-family: var(--f); }
+.sheet textarea.mynotes { overflow: auto; max-height: 60vh; min-height: 220px; }
 
 </style>
 </head>
@@ -929,7 +930,7 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
   const bucketOf = (qid) => 'b' + U.pad(U.fnv(String(qid)) % NB);
 
   const DEFAULT_PREFS = {
-    theme: 'light', fs: 1, explTab: 'sum', display: 'clean', shuffle: true, hideTags: false,
+    theme: 'light', fs: 1, explTab: 'full', hlShade: 25, display: 'clean', shuffle: true, hideTags: false,
     askConf: true, boardN: 100, boardMin: 120, examSec: 72, sessN: 40,
     sessMode: 'practice', showMistakeAns: false, timer: 'total', flow: 'step', heroHide: true,
   };
@@ -2887,6 +2888,9 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
   ui.applyTheme = function () {
     document.documentElement.dataset.theme = S.pref('theme') || 'light';
     document.documentElement.style.setProperty('--fs', String(S.pref('fs') || 1));
+    // the highlight colors: one shade for the four, the same in every theme
+    const sh = S.pref('hlShade');
+    document.documentElement.style.setProperty('--hlL', (95 - 0.25 * Math.min(100, Math.max(0, sh == null || sh === '' ? 25 : +sh))).toFixed(1) + '%');
   };
 
   /* ---------- navigation ---------- */
@@ -3041,7 +3045,7 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
       ui.sheet({
         cls: 'sm',
         html: sh(U.esc(o.title || '')) + (o.label ? '<div class="muted" style="margin-bottom:8px">' + U.esc(o.label) + '</div>' : '') +
-          (o.multi ? '<textarea class="inp" rows="6" data-key="pv" autofocus placeholder="' + U.esc(o.placeholder || '') + '">' + U.esc(o.value || '') + '</textarea>'
+          (o.multi ? '<textarea class="inp' + (o.cls ? ' ' + o.cls : '') + '" rows="' + (o.rows || 6) + '" data-key="pv" autofocus placeholder="' + U.esc(o.placeholder || '') + '">' + U.esc(o.value || '') + '</textarea>'
             : '<input class="inp" style="width:100%" data-key="pv" autofocus value="' + U.esc(o.value || '') + '" placeholder="' + U.esc(o.placeholder || '') + '">') +
           '<div class="acts">' + (o.del ? '<button class="btn dg" data-a="del" style="margin-inline-end:auto">' + o.del + '</button>' : '') +
           '<button class="btn g" data-a="no">إلغاء</button><button class="btn p" data-a="yes">' + (o.ok || 'حفظ') + '</button></div>',
@@ -3108,9 +3112,12 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
   // accuracy status for meters (status palette + text label, never colour alone)
   ui.accStatus = (p) => (p == null ? ['var(--ink3)', '—', ''] : p >= 80 ? ['var(--st-good)', 'جيد', '✓'] : p >= 65 ? ['var(--st-warn)', 'متوسط', '◐'] : p >= 50 ? ['var(--st-serious)', 'ضعيف', '▲'] : ['var(--st-critical)', 'ضعيف جدًا', '▲']);
   // what shows first after answering (one setting, used by the settings, the Aa sheet and the start sheet)
-  UB.EXPL_FIRST = [['notes', '📝 ملاحظتي'], ['sum', '⚡ الملخص'], ['full', '📖 الشرح الكامل'], ['both', 'الاثنان معًا']];
-  ui.explFirstSeg = (cur, a = 'et') => '<div class="seg">' + UB.EXPL_FIRST.map(([v, l]) => '<button class="' + ((cur || 'sum') === v ? 'on' : '') + '" data-a="' + a + '" data-v="' + v + '">' + l + '</button>').join('') + '</div>' +
-    ((cur || 'sum') === 'notes' ? '<div class="note" style="margin:6px 2px 0">السؤال الذي ليس فيه ملاحظات يظهر فيه الملخص.</div>' : '');
+  UB.EXPL_FIRST = [['notes', '📝 ملاحظتي'], ['full', '📖 الشرح الكامل'], ['both', 'الاثنان معًا']];
+  ui.explFirstSeg = (cur, a = 'et') => {
+    const c = cur === 'notes' || cur === 'both' ? cur : 'full';
+    return '<div class="seg">' + UB.EXPL_FIRST.map(([v, l]) => '<button class="' + (c === v ? 'on' : '') + '" data-a="' + a + '" data-v="' + v + '">' + l + '</button>').join('') + '</div>' +
+      (c === 'notes' ? '<div class="note" style="margin:6px 2px 0">السؤال الذي ليس فيه ملاحظات يظهر فيه الشرح الكامل.</div>' : c === 'both' ? '<div class="note" style="margin:6px 2px 0">ملاحظتي في الأعلى، والشرح الكامل تحتها.</div>' : '');
+  };
   ui.chip = (attrs, label, cls, n) => '<button class="chip ' + (cls || '') + '" ' + attrs + '><span class="t">' + label + '</span>' + (n != null ? '<span class="n">' + n + '</span>' : '') + '</button>';
   ui.switchRow = (key, title, desc, on, extra) => '<div class="sw-row"><div class="t"><b>' + title + '</b>' + (desc ? '<span>' + desc + '</span>' : '') + '</div>' + (extra || '') +
     '<button class="switch' + (on ? ' on' : '') + '" role="switch" aria-checked="' + (on ? 'true' : 'false') + '" data-a="sw" data-k="' + key + '" aria-label="' + U.esc(title) + '"></button></div>';
@@ -3360,7 +3367,7 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
       perq: S.pref('examSec') || 72,
       mins: o.board ? S.pref('boardMin') : Math.max(5, Math.round(((S.pref('examSec') || 72) * Math.min(total, S.pref('sessN') || 40)) / 60)),
       disp: o.board ? 'clean' : S.pref('display') || 'clean',
-      shuf: o.board ? true : S.pref('shuffle'), hideTags: o.board ? true : S.pref('hideTags'), et: S.pref('explTab') || 'sum',
+      shuf: o.board ? true : S.pref('shuffle'), hideTags: o.board ? true : S.pref('hideTags'), et: ['notes', 'both'].includes(S.pref('explTab')) ? S.pref('explTab') : 'full',
       flow: S.pref('flow') || 'step',
     };
     if (o.board) { st.mode = 'exam'; st.n = Math.min(total, S.pref('boardN') || 100, MAXQ); }
@@ -3380,7 +3387,7 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
       return ui.sh(o.board ? '⏱ محاكاة البورد العراقي' : 'ابدأ جلسة', U.esc(o.title || '') + ' · ' + U.nQ(total) + ' متاحة') +
         (o.board ? '<div class="banner info">عدد الأسئلة والوقت قابلان للتعديل. اضبطهما مرة واحدة حسب نظام امتحانك النهائي من الإعدادات، وسيتذكرهما البرنامج.</div>' : '') +
         '<div class="seg" style="max-width:420px"><button class="' + (st.mode === 'practice' ? 'on' : '') + '" data-a="mode" data-v="practice">📖 تدريب</button><button class="' + (st.mode === 'exam' ? 'on' : '') + '" data-a="mode" data-v="exam">⏱ امتحان</button></div>' +
-        '<div class="note" style="margin:6px 2px 0">' + (st.mode === 'practice' ? 'الإجابة والملخص والشرح تظهر فور الاختيار.' : 'الإجابات تظهر بعد التسليم مع تقرير مفصل.') + '</div>' +
+        '<div class="note" style="margin:6px 2px 0">' + (st.mode === 'practice' ? 'الإجابة والشرح يظهران فور الاختيار.' : 'الإجابات تظهر بعد التسليم مع تقرير مفصل.') + '</div>' +
         '<div class="lbl" style="font-size:14px;font-weight:700;margin:16px 0 8px">طريقة عرض الأسئلة</div>' +
         '<div class="seg" style="max-width:520px"><button class="' + (st.flow !== 'scroll' ? 'on' : '') + '" data-a="flow" data-v="step">سؤال بسؤال (التالي ›)</button>' +
         '<button class="' + (st.flow === 'scroll' ? 'on' : '') + '" data-a="flow" data-v="scroll">↕ تمرير متواصل</button></div>' +
@@ -3482,17 +3489,6 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
   let ticker = null;
 
   const paras = (t) => esc(t).split(/\n\s*\n/).map((p) => '<p>' + p.replace(/\n/g, '<br>') + '</p>').join('');
-  function sumHtml(q, s) {
-    let t = q.sum;
-    // the summary starts with the book letter ("B — …"); show the letter as displayed in this session
-    if (t && s) {
-      const m0 = /^([A-J])\s*—\s*/.exec(t);
-      if (m0 && m0[1] === q.ans) { const pos = SE.order(s, q).indexOf(q.ans); if (pos >= 0) t = L[pos] + ' — ' + t.slice(m0[0].length); }
-    }
-    if (!t) { const s = q.expl.split(/\.\s+/); t = s.slice(0, 2).join('. ') + (s.length > 1 ? '.' : ''); }
-    const m = /^(.{2,140}?\.)\s+(.*)$/s.exec(t);
-    return m ? '<b>' + esc(m[1]) + '</b> ' + esc(m[2]) : esc(t);
-  }
   const priorOf = (s, q) => ((S.st(q.id) && S.st(q.id).a) || []).filter((x) => x[5] !== s.id);
 
   function tagsHtml(s, q) {
@@ -3599,8 +3595,11 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
     const qa = qiAttr(qi);
     const a = s.ans[q.id];
     const inf0 = S.info(q.id);
-    const first = S.pref('explTab') || 'sum';
-    const tab = tab0 || (qi == null && ui.st.tab) || (first === 'notes' ? (inf0.hlN || inf0.note ? 'notes' : 'sum') : first);
+    // what shows first: my notes (when there are any), the full explanation, or both (notes on top)
+    const pf = S.pref('explTab');
+    const first = pf === 'notes' ? (inf0.note ? 'notes' : 'full') : pf === 'both' ? 'both' : 'full';
+    let tab = tab0 || (qi == null && ui.st.tab) || first;
+    if (tab !== 'notes' && tab !== 'both') tab = 'full';
     const demo = B.isDemo(q);
     let verdict;
     if (!a) verdict = '<div class="verdict neutral"><div><b>— لم تُجب على هذا السؤال</b><span>الإجابة الصحيحة: ' + L[SE.order(s, q).indexOf(q.ans)] + '</span></div></div>';
@@ -3609,14 +3608,13 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
       const inf = S.info(q.id);
       verdict = '<div class="verdict bad"><div><b>✕ إجابة خاطئة</b><span>' + (s.review ? 'الإجابة الصحيحة: ' + L[SE.order(s, q).indexOf(q.ans)] : 'أُضيف إلى قائمة الأخطاء · أخطأت فيه ' + U.nTimes(inf.wrong)) + '</span></div></div>';
     }
-    const nN = inf0.hlN + (inf0.note ? 1 : 0);
-    const seg = '<div class="seg"><button class="' + (tab === 'notes' ? 'on' : '') + '" data-a="tab" data-v="notes"' + qa + '>📝 ملاحظتي' + (nN ? '<span class="cnt">' + nN + '</span>' : '') + '</button>' +
-      '<button class="' + (tab === 'sum' ? 'on' : '') + '" data-a="tab" data-v="sum"' + qa + '>⚡ الملخص</button><button class="' + (tab === 'full' ? 'on' : '') + '" data-a="tab" data-v="full"' + qa + '>📖 الشرح الكامل</button><button class="' + (tab === 'both' ? 'on' : '') + '" data-a="tab" data-v="both"' + qa + '>الاثنان معًا</button></div>';
-    const sum = '<div class="sum"><h5><span class="ens">Quick summary</span><span style="font-weight:500;font-size:12.5px">ملخص' + (q.sum ? '' : ' (من الشرح)') + '</span></h5><p class="en">' + sumHtml(q, s) + '</p></div>';
+    const seg = '<div class="seg"><button class="' + (tab === 'notes' ? 'on' : '') + '" data-a="tab" data-v="notes"' + qa + '>📝 ملاحظتي' + (inf0.note ? '<span class="ndot" title="فيها ملاحظات"></span>' : '') + '</button>' +
+      '<button class="' + (tab === 'full' ? 'on' : '') + '" data-a="tab" data-v="full"' + qa + '>📖 الشرح الكامل</button>' +
+      '<button class="' + (tab === 'both' ? 'on' : '') + '" data-a="tab" data-v="both"' + qa + '>الاثنان معًا</button></div>';
     const refs = (q.refs || []).length ? '<div class="ref en">' + q.refs.map(esc).join(' · ') + '</div>' : '';
     const page = q.page ? '<div class="ref">صفحة ' + esc(q.page) + ' في المصدر</div>' : '';
     const full = '<div class="full"><h5><span class="ens">' + (demo ? 'Full explanation (sample)' : 'Full explanation (from the book)') + '</span><span style="font-weight:500;font-size:12.5px;color:var(--ink3)">' + (demo ? 'شرح تجريبي' : 'الشرح الكامل') + '</span></h5>' + (q.expl ? UB.HL.bar() + UB.HL.box(q) : '<div class="en">' + paras(q.expl) + '</div>') + imgsHtml(q, 'expl') + refs + page + '</div>';
-    const body = tab === 'notes' ? UB.HL.notesHtml(q, qa) : tab === 'sum' ? sum : tab === 'full' ? full : sum + full;
+    const body = tab === 'notes' ? UB.HL.notesHtml(q) : tab === 'both' ? UB.HL.notesHtml(q) + full : full;
     const cnote = q.conflict ? B.reviewNote(q) : '';
     const warn = q.conflict ? '<div class="cwarn">⚠️ <b>انتبه: ملف هذا السؤال يقول إن الجواب في المفتاح لا يتطابق مع الشرح.</b>' + (cnote ? '<div class="en">' + esc(cnote) + '</div>' : '') + '</div>' : '';
     return verdict + warn + seg + body;
@@ -3701,10 +3699,16 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
       }
       if (s && flowOf(s) === 'scroll') setupScroll(s);
       UB.HL.attach();
+      UB.HL.fitNotes();
+    },
+    input(k, el) {
+      if (k === 'mynote') UB.HL.noteInput(el);
+      else if (k === 'hlshade') UB.HL.shadeInput(el);
     },
     leave() {
       clearInterval(ticker);
       UB.HL.cancel();
+      UB.HL.flushNote();
       const s = SE.cur();
       if (s && SE.live(s)) { SE.leaveQ(s); SE.pause(s); SE.save(s); }
       ui.st.qid = null;
@@ -3751,6 +3755,7 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
         case 'guess': if (q) { s.guess[q.id] = s.guess[q.id] ? 0 : 1; SE.save(s); ui.refresh(); } return;
         case 'reason': if (q) { SE.setReason(s, q, el.dataset.v); ui.refresh(); } return;
         case 'tab':
+          UB.HL.flushNote();
           if (scroll && q) (ui.st.tabs = ui.st.tabs || {})[q.id] = el.dataset.v;
           else ui.st.tab = el.dataset.v;
           ui.refresh();
@@ -3773,10 +3778,19 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
           else S.setFlag(q.id, !S.info(q.id).flag);
           ui.refresh();
           return;
-        case 'note': if (q) UB.noteSheet(q, () => ui.refresh()); return;
+        case 'note': {
+          if (!q) return;
+          UB.HL.flushNote();
+          const tabBtn = document.querySelector('[data-a=tab][data-v=notes]' + (scroll ? '[data-qi="' + s.i + '"]' : ''));
+          if (!tabBtn) { UB.noteSheet(q, () => ui.refresh()); return; }
+          if (scroll) (ui.st.tabs = ui.st.tabs || {})[q.id] = 'notes'; else ui.st.tab = 'notes';
+          ui.refresh();
+          const ed = document.querySelector('textarea.mynotes[data-q="' + q.id + '"]');
+          if (ed) { ed.focus({ preventScroll: true }); ed.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+          return;
+        }
         case 'hlc': ui.st.hlColor = ui.st.hlColor === el.dataset.v ? '' : el.dataset.v; UB.HL.cancel(); ui.refresh(); return;
         case 'hlmark': { const box = el.closest('.hlbox'); if (box) UB.HL.menu(box.dataset.q, +el.dataset.h); return; }
-        case 'hldel': { const hq = B.byId[el.dataset.q]; if (hq) { UB.HL.remove(hq, +el.dataset.h); UB._agg = null; ui.refresh(); } return; }
         case 'edit': if (q) UB.editQuestion(q, () => ui.refresh()); return;
         case 'hist':
           if (!q) return;
@@ -3808,11 +3822,11 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
         if (scroll) {
           if (!q) return;
           const tabs = (ui.st.tabs = ui.st.tabs || {});
-          const t = tabs[q.id] || S.pref('explTab') || 'sum';
-          tabs[q.id] = t === 'sum' ? 'full' : 'sum';
+          const t = tabs[q.id] || S.pref('explTab') || 'full';
+          tabs[q.id] = t === 'notes' ? 'full' : 'notes';
         } else {
-          const t = ui.st.tab || S.pref('explTab') || 'sum';
-          ui.st.tab = t === 'sum' ? 'full' : 'sum';
+          const t = ui.st.tab || S.pref('explTab') || 'full';
+          ui.st.tab = t === 'notes' ? 'full' : 'notes';
         }
         ui.refresh();
         return;
@@ -4021,7 +4035,7 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
 
   UB.noteSheet = async function (q, done) {
     const cur = S.info(q.id).note;
-    const v = await ui.prompt({ title: '📝 ملاحظتي على السؤال', value: cur, multi: true, placeholder: 'اكتب ملاحظة تظهر لك كلما رجعت لهذا السؤال…', del: cur ? 'حذف الملاحظة' : '' });
+    const v = await ui.prompt({ title: '📝 ملاحظتي على السؤال', value: cur, multi: true, cls: 'mynotes', rows: 10, placeholder: 'اكتب ملاحظة تظهر لك كلما رجعت لهذا السؤال…', del: cur ? 'حذف الملاحظة' : '' });
     if (v === null) return;
     S.setNote(q.id, v);
     ui.toast(v ? 'حُفظت الملاحظة' : 'حُذفت الملاحظة');
@@ -5906,9 +5920,10 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
 })();
 
 </script><script>
-/* UroBank — highlighter: colored highlights in the full explanation, gathered in «ملاحظتي».
+/* UroBank — highlighter and «ملاحظتي».
    A highlight is [start, end, color, text]: offsets into q.expl plus the text itself, so it can be found again
-   if the explanation changes. With a color picked, a drag on the text highlights; with none, the text selects as usual. */
+   if the explanation changes. With a color picked, a drag on the text highlights; with none, the text selects as usual.
+   Each highlighted sentence is also written into the question's note (plain text the user can edit). */
 (function () {
   'use strict';
   const UB = window.UB;
@@ -5920,6 +5935,17 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
   HL.cname = (c) => (COLORS.find((x) => x[0] === c) || COLORS[0])[1];
   const W = /[\p{L}\p{N}'’-]/u; // a character inside a word
   const HAS_WORD = /[\p{L}\p{N}]/u;
+
+  /* ---------- shade: one slider for the four colors, light to strong ---------- */
+  HL.SHADE0 = 25;
+  HL.lightness = (v) => 95 - 0.25 * U.clamp(v == null || v === '' ? HL.SHADE0 : +v, 0, 100);
+  let shadeT = null;
+  HL.shadeInput = function (el) {
+    const v = +el.value;
+    document.documentElement.style.setProperty('--hlL', HL.lightness(v).toFixed(1) + '%');
+    clearTimeout(shadeT);
+    shadeT = setTimeout(() => S.setPref('hlShade', v), 400);
+  };
 
   /* ---------- the stored highlights, placed on the current text ---------- */
   HL.list = function (q) {
@@ -5934,7 +5960,6 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
       return { i, s, e, c: c || 'y', t };
     });
   };
-  HL.count = (q) => S.info(q.id).hlN;
 
   // whole words only, no spaces at the ends; a single point = the word under it
   HL.snap = function (T, a, b) {
@@ -5953,6 +5978,35 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
     return [a, b];
   };
 
+  /* ---------- the note of a question (plain text) ---------- */
+  const lines = (q) => { const n = S.info(q.id).note || ''; return n ? n.split('\n') : []; };
+  const same = (x, y) => x.trim() === y.trim();
+  // a sentence highlighted: replace the line of a highlight it grew from (if that line was not edited), else add it
+  function noteAdd(q, text, grewFrom) {
+    const ls = lines(q);
+    let at = -1;
+    for (const old of grewFrom) {
+      const k = ls.findIndex((l) => same(l, old));
+      if (k < 0) continue;
+      if (at < 0) { at = k; ls[k] = text; } else { ls.splice(k, 1); if (k < at) at--; }
+    }
+    if (at < 0) {
+      if (ls.some((l) => l.includes(text))) return;
+      while (ls.length && !ls[ls.length - 1].trim()) ls.pop();
+      ls.push(text);
+    }
+    S.setNote(q.id, ls.join('\n'));
+  }
+  // a highlight removed: its line goes too, unless the user changed it
+  function noteRemove(q, text) {
+    const ls = lines(q);
+    const k = ls.findIndex((l) => same(l, text));
+    if (k < 0) return;
+    ls.splice(k, 1);
+    S.setNote(q.id, ls.join('\n'));
+  }
+
+  /* ---------- changes ---------- */
   function save(q, spans, keep) {
     const T = q.expl || '';
     const list = spans
@@ -5960,15 +6014,17 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
       .filter((h) => h[1] > h[0] && HAS_WORD.test(h[3]))
       .sort((x, y) => x[0] - y[0]);
     S.setHl(q.id, list.concat(keep || []));
+    return list;
   }
   // add [a, b) in color c: it replaces what it covers, and joins a neighbour of the same color
   HL.add = function (q, a, b, c) {
+    HL.flushNote();
     const T = q.expl || '';
     [a, b] = HL.snap(T, a, b);
     if (b <= a || !HAS_WORD.test(T.slice(a, b))) return false;
     const placed = HL.list(q);
     const raw = S.info(q.id).hl || [];
-    const lost = raw.filter((h, i) => placed[i].s < 0); // no longer found in the text: kept as notes
+    const lost = raw.filter((h, i) => placed[i].s < 0); // no longer found in the text: kept as they are
     const out = [];
     for (const h of placed) {
       if (h.s < 0) continue;
@@ -5984,14 +6040,77 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
       if (last && last[2] === h[2] && h[0] <= last[1] + 2 && /^[\s,;:.]*$/.test(T.slice(last[1], h[0]))) last[1] = Math.max(last[1], h[1]);
       else merged.push(h.slice());
     }
-    save(q, merged, lost);
+    const list = save(q, merged, lost);
+    const mine = list.find((h) => h[2] === c && h[0] <= a && h[1] >= b);
+    if (mine) {
+      // highlights now inside the new one (grown, or covered by another color): their lines become this line
+      const grewFrom = placed.filter((h) => h.s >= 0 && h.s >= mine[0] && h.e <= mine[1]).map((h) => h.t);
+      noteAdd(q, mine[3], grewFrom);
+    }
     return true;
   };
-  HL.remove = (q, idx) => S.setHl(q.id, (S.info(q.id).hl || []).filter((_, i) => i !== idx));
+  HL.remove = (q, idx) => {
+    HL.flushNote();
+    const raw = S.info(q.id).hl || [];
+    const h = raw[idx];
+    S.setHl(q.id, raw.filter((_, i) => i !== idx));
+    if (h) noteRemove(q, h[3] || '');
+  };
   HL.recolor = (q, idx, c) => S.setHl(q.id, (S.info(q.id).hl || []).map((h, i) => (i === idx ? [h[0], h[1], c, h[3]] : h)));
 
-  /* ---------- drawing ---------- */
-  // the full explanation as paragraphs; every piece of text carries its offset in q.expl (data-o)
+  // once: the sentences highlighted before the notes became editable are written into the notes
+  HL.migrate = function () {
+    if (S.pref('notesMig')) return;
+    let n = 0;
+    for (const id in S.docs) {
+      const d = S.docs[id];
+      if (!/^b\d+$/.test(id) || !d || !d.q) continue;
+      for (const qid in d.q) {
+        const st = d.q[qid];
+        if (!st || !st.hl || !st.hl.length) continue;
+        const ls = st.n ? st.n.split('\n') : [];
+        let changed = false;
+        for (const h of st.hl) {
+          const t = (h[3] || '').trim();
+          if (t && !ls.some((l) => l.includes(t))) { ls.push(t); changed = true; }
+        }
+        if (changed) { S.setNote(qid, ls.join('\n')); n++; }
+      }
+    }
+    S.setPref('notesMig', 1);
+    return n;
+  };
+
+  /* ---------- the note editor («ملاحظتي») ---------- */
+  let pend = null; // a typed note not saved yet: { qid, el, t }
+  HL.flushNote = function () {
+    if (!pend) return;
+    const p = pend;
+    pend = null;
+    clearTimeout(p.t);
+    if ((S.info(p.qid).note || '') !== p.el.value.trim()) S.setNote(p.qid, p.el.value);
+  };
+  HL.noteInput = function (el) {
+    fit(el);
+    if (pend && pend.el !== el) HL.flushNote();
+    if (!pend) pend = { qid: el.dataset.q, el, t: null };
+    clearTimeout(pend.t);
+    pend.t = setTimeout(HL.flushNote, 600);
+  };
+  function fit(el) { el.style.height = 'auto'; el.style.height = Math.max(120, el.scrollHeight + 2) + 'px'; }
+  HL.fitNotes = () => document.querySelectorAll('textarea.mynotes').forEach((el) => {
+    fit(el);
+    if (!el._b) { el._b = 1; el.addEventListener('blur', HL.flushNote); }
+  });
+  HL.notesHtml = function (q) {
+    const note = S.info(q.id).note || '';
+    return '<div class="notesbox"><textarea class="mynotes" data-i="mynote" data-q="' + esc(q.id) + '" data-key="mynote-' + esc(q.id) + '" rows="4" spellcheck="false" ' +
+      'placeholder="اكتب ملاحظاتك هنا… والجمل التي تظلّلها في «الشرح الكامل» تُضاف هنا تلقائيًا">' + esc(note) + '</textarea>' +
+      '<div class="nhint">تُحفظ تلقائيًا · تستطيع التعديل والحذف والإضافة كما تشاء</div></div>';
+  };
+
+  /* ---------- drawing the explanation ---------- */
+  // paragraphs; every piece of text carries its offset in q.expl (data-o)
   HL.fullHtml = function (q) {
     const T = q.expl || '';
     const hs = HL.list(q).filter((h) => h.s >= 0 && h.e > h.s).sort((x, y) => x.s - y.s);
@@ -6022,27 +6141,11 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
   HL.box = (q) => '<div class="en hlbox' + (ui.st.hlColor ? ' hlon' : '') + '" data-q="' + esc(q.id) + '">' + HL.fullHtml(q) + '</div>';
   HL.bar = function () {
     const cur = ui.st.hlColor || '';
+    const sh = S.pref('hlShade');
     return '<div class="hlbar"><span class="hlpen">🖍 تظليل</span>' +
       COLORS.map(([c, n]) => '<button class="hlc hl-' + c + (cur === c ? ' on' : '') + '" data-a="hlc" data-v="' + c + '" aria-label="' + n + '" title="' + n + '"></button>').join('') +
+      '<label class="hlshade"><span>فاتح</span><input type="range" min="0" max="100" step="1" value="' + (sh == null ? HL.SHADE0 : sh) + '" data-i="hlshade" aria-label="درجة اللون"><span>أغمق</span></label>' +
       '<span class="hlhint">' + (cur ? 'مرّر إصبعك على الجملة · اضغط اللون مرة ثانية للإيقاف' : 'اختر لونًا ثم مرّر إصبعك على الجملة') + '</span></div>';
-  };
-  // the «ملاحظتي» tab of one question: the written note, then the highlights in text order
-  HL.notesHtml = function (q, qa) {
-    const inf = S.info(q.id);
-    const list = HL.list(q).sort((x, y) => (x.s < 0) - (y.s < 0) || x.s - y.s);
-    let html = '';
-    if (inf.note) {
-      html += '<div class="mynote"><div class="h"><b>📝 ملاحظتي المكتوبة</b><button class="btn g sm" data-a="note"' + qa + '>تعديل</button></div>' +
-        '<div class="t">' + esc(inf.note).replace(/\n/g, '<br>') + '</div></div>';
-    }
-    if (list.length) {
-      html += '<div class="hllist">' + list.map((h) => '<div class="hlitem"><div class="en grow"><mark class="hl hl-' + h.c + '">' + esc(h.t) + '</mark>' +
-        (h.s < 0 ? '<div class="note" style="direction:rtl">لم تعد هذه الجملة في الشرح بعد تحديث الملف، لكنها محفوظة هنا.</div>' : '') + '</div>' +
-        '<button class="x" data-a="hldel" data-q="' + esc(q.id) + '" data-h="' + h.i + '" aria-label="إزالة" title="إزالة">✕</button></div>').join('') + '</div>';
-    }
-    if (!html) html = '<div class="nonotes">لا توجد ملاحظات على هذا السؤال بعد.<br>افتح «📖 الشرح الكامل»، اختر لونًا 🖍، ثم مرّر إصبعك على الجملة.</div>';
-    if (!inf.note) html += '<button class="btn g sm" data-a="note"' + qa + ' style="margin-top:10px">📝 اكتب ملاحظة</button>';
-    return '<div class="notesbox">' + html + '</div>';
   };
 
   /* ---------- a touch on the text -> a position in q.expl ---------- */
@@ -6190,6 +6293,7 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
       html: ui.sh('🖍 هذا التظليل') + '<div class="hlq en"><mark class="hl hl-' + h[2] + '">' + esc(h[3]) + '</mark></div>' +
         '<div class="lbl" style="margin:14px 0 8px;font-weight:700">غيّر اللون</div><div class="row" style="gap:12px">' +
         COLORS.map(([c, n]) => '<button class="hlc hl-' + c + (c === h[2] ? ' on' : '') + '" data-a="recolor" data-v="' + c + '" aria-label="' + n + '" title="' + n + '"></button>').join('') + '</div>' +
+        '<div class="muted" style="font-size:13px;margin-top:12px">إزالة التظليل تحذف هذه الجملة من «ملاحظتي» أيضًا، إلا إذا كنت عدّلتها هناك.</div>' +
         '<div class="acts"><button class="btn dg" data-a="rm">إزالة التظليل</button><button class="btn p" data-a="close">تم</button></div>',
       onAct: (a, el, e, sh) => {
         if (a === 'recolor') { HL.recolor(q, idx, el.dataset.v); sh.close(); ui.refresh(); }
@@ -6200,7 +6304,8 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
 })();
 
 </script><script>
-/* UroBank — «ملاحظاتي»: everything highlighted or written, by specialty then topic, as one list to read before the exam */
+/* UroBank — «ملاحظاتي»: the notes of every question (highlighted sentences and own words), by specialty then topic,
+   as one list to read before the exam */
 (function () {
   'use strict';
   const UB = window.UB;
@@ -6208,39 +6313,23 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
   const esc = U.esc, tx = UB.tx;
   const NONE = '~';
 
-  const dot = (c) => '<span class="cdot hl-' + c + '"></span>';
-
   V.notes = {
     render() {
       if (!B.loaded) return '<div class="view"><div class="loading">جارٍ التحميل…</div></div>';
-      const HL = UB.HL;
-      const sel = ui.st.ntc || (ui.st.ntc = []); // picked colors; 'w' = written notes; none = everything
-      const want = (c) => !sel.length || sel.includes(c);
-      const cnt = { y: 0, g: 0, p: 0, b: 0, w: 0 };
       let hidden = 0;
       const rows = [];
       for (const q of B.list) {
-        const inf = S.info(q.id);
-        if (!inf.hlN && !inf.note) continue;
+        const note = S.info(q.id).note;
+        if (!note) continue;
         if (S.hidden(q.id)) { hidden++; continue; }
-        const all = HL.list(q).sort((x, y) => (x.s < 0) - (y.s < 0) || x.s - y.s);
-        for (const h of all) cnt[h.c] = (cnt[h.c] || 0) + 1;
-        if (inf.note) cnt.w++;
-        const items = all.filter((h) => want(h.c));
-        const note = want('w') ? inf.note : '';
-        if (!items.length && !note) continue;
         const e = B.eff(q);
-        rows.push({ q, items, note, spec: e.spec && tx.get(e.spec) ? e.spec : NONE, topic: e.topic && tx.get(e.topic) ? e.topic : NONE });
+        rows.push({ q, note, spec: e.spec && tx.get(e.spec) ? e.spec : NONE, topic: e.topic && tx.get(e.topic) ? e.topic : NONE });
       }
       // specialty -> topic -> questions, in the order of the topic list; then the source order
       const specRank = (id) => { const i = tx.specs.findIndex((x) => x.id === id); return i < 0 ? 999 : i; };
       const topicRank = (sp, id) => { if (id === NONE) return -1; const s = tx.get(sp); const i = s ? s.topics.findIndex((x) => x.id === id) : -1; return i < 0 ? 998 : i; };
       rows.sort((a, b) => specRank(a.spec) - specRank(b.spec) || topicRank(a.spec, a.topic) - topicRank(b.spec, b.topic) || a.q.order.localeCompare(b.q.order));
       ui.st.ntList = rows.map((r) => r.q.id);
-
-      const total = cnt.y + cnt.g + cnt.p + cnt.b;
-      const chips = HL.COLORS.map(([c, n]) => ui.chip('data-a="col" data-v="' + c + '"', dot(c) + ' ' + n, sel.includes(c) ? 'inc' : '', cnt[c]))
-        .concat([ui.chip('data-a="col" data-v="w"', '📝 المكتوبة', sel.includes('w') ? 'inc' : '', cnt.w)]).join('');
 
       let body = '';
       let sp0 = null, tp0 = null;
@@ -6254,37 +6343,27 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
           tp0 = null;
         }
         if (r.topic !== tp0) {
-          body += '<h3 class="ens">' + esc(r.topic === NONE ? (r.spec === NONE ? '' : 'General') : tx.name(r.topic)) + '</h3>';
+          const t = r.topic === NONE ? (r.spec === NONE ? '' : 'General') : tx.name(r.topic);
+          if (t) body += '<h3 class="ens">' + esc(t) + '</h3>';
           tp0 = r.topic;
         }
-        body += '<div class="ntq">' +
-          r.items.map((h) => '<div class="ntx en"><mark class="hl hl-' + h.c + '">' + esc(h.t) + '</mark></div>').join('') +
-          (r.note ? '<div class="ntw">📝 ' + esc(r.note).replace(/\n/g, '<br>') + '</div>' : '') +
-          '<button class="ntsrc" data-a="open" data-id="' + esc(r.q.id) + '">افتح السؤال · <span dir="ltr">' + esc(B.srcLabel(r.q)) + '</span> ›</button></div>';
+        body += '<div class="ntq"><div class="nttext">' + esc(r.note) + '</div>' +
+          '<div class="ntacts"><button class="ntedit" data-a="edit" data-id="' + esc(r.q.id) + '">✏️ تعديل</button>' +
+          '<button class="ntsrc" data-a="open" data-id="' + esc(r.q.id) + '">افتح السؤال · <span dir="ltr">' + esc(B.srcLabel(r.q)) + '</span> ›</button></div></div>';
       }
       if (sp0 !== null) body += '</div></section>';
 
-      const empty = !total && !cnt.w;
-      return '<div class="view"><div class="vtop"><div><h1>📝 ملاحظاتي</h1><div class="sub">كل ما ظلّلته وكتبته، مرتّبًا حسب التخصص ثم الموضوع</div></div>' +
+      return '<div class="view"><div class="vtop"><div><h1>📝 ملاحظاتي</h1><div class="sub">ملاحظات كل الأسئلة، مرتّبة حسب التخصص ثم الموضوع</div></div>' +
         '<button class="btn p" data-a="start"' + (rows.length ? '' : ' disabled') + '>📖 تدرّب على أسئلتها</button></div>' +
-        (empty
-          ? '<div class="card"><div class="empty"><div class="big">🖍</div>لا توجد ملاحظات بعد.<br>أثناء حل الأسئلة افتح «📖 الشرح الكامل»، اختر لونًا، ثم مرّر إصبعك على الجملة. ستجدها هنا.</div></div>'
-          : '<div class="chips ntchips">' + chips + (sel.length ? '<button class="lnk" data-a="colclr">عرض الكل</button>' : '') + '</div>' +
-            (rows.length ? '<div class="card ntlist">' + body + '</div>' : '<div class="card"><div class="empty">لا توجد ملاحظات بهذا اللون.</div></div>')) +
+        (rows.length
+          ? '<div class="card ntlist">' + body + '</div>'
+          : '<div class="card"><div class="empty"><div class="big">🖍</div>لا توجد ملاحظات بعد.<br>أثناء حل الأسئلة افتح «📖 الشرح الكامل»، اختر لونًا، ثم مرّر إصبعك على الجملة؛ فتُضاف إلى «ملاحظتي» وتظهر هنا. وتستطيع الكتابة في «ملاحظتي» مباشرة.</div></div>') +
         (hidden ? '<div class="note" style="margin-top:10px">' + U.nQ(hidden) + ' في Hero لها ملاحظات ولا تظهر هنا لأن أسئلة Hero مخفية. تستطيع إظهارها من صفحة Hero.</div>' : '') +
         '</div>';
     },
     act(a, el) {
-      const sel = ui.st.ntc || (ui.st.ntc = []);
-      if (a === 'col') {
-        const v = el.dataset.v;
-        const i = sel.indexOf(v);
-        if (i >= 0) sel.splice(i, 1); else sel.push(v);
-        ui.refresh();
-        return;
-      }
-      if (a === 'colclr') { sel.length = 0; ui.refresh(); return; }
       const ids = ui.st.ntList || [];
+      if (a === 'edit') { const q = B.byId[el.dataset.id]; if (q) UB.noteSheet(q, () => ui.refresh()); return; }
       if (a === 'open') { const i = ids.indexOf(el.dataset.id); UB.startList(ids, 'ملاحظاتي', 'practice', Math.max(0, i)); return; }
       if (a === 'start' && ids.length) UB.startSheet({ qids: ids, title: 'ملاحظاتي', kind: 'practice' });
     },
@@ -6736,6 +6815,7 @@ mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit
     for (const k in names) if (!UB.V[k]) UB.V[k] = soon(names[k]);
     ui.show();
     await B.load();
+    try { if (UB.HL) UB.HL.migrate(); } catch (e) { console.warn(e); }
     ui.show();
     let banksSig = U.stable(S.docs.banks.list || []);
     const rerender = U.debounce(() => {
