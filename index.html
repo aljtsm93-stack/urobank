@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="UroBank">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#F4F1EA">
-<meta name="urobank-version" content="379f62c3eb">
+<meta name="urobank-version" content="7c35d32cda">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -496,6 +496,48 @@ button.stat { width: 100%; }
 .sparts .chip { max-width: 100%; white-space: normal; text-align: start; line-height: 1.35; padding-top: 7px; padding-bottom: 7px; }
 .sparts .chip .t { overflow-wrap: anywhere; }
 
+/* highlighter (ملاحظتي): fixed colors, the same in light, sepia and dark; the text on them is always dark */
+mark.hl { color: #161616 !important; border-radius: 3px; padding: 1px 0; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.hl-y { background: #FFE45C !important; }
+.hl-g { background: #A8EC8E !important; }
+.hl-p { background: #FFB2D5 !important; }
+.hl-b { background: #A3D8FF !important; }
+.hlbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 12px; padding: 8px 12px; border-radius: 12px; background: var(--chip); border: 1px solid var(--line2); }
+.hlbar .hlpen { font-weight: 700; font-size: 13.5px; color: var(--ink); }
+.hlc { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,.2); padding: 0; flex: none; cursor: pointer; }
+.hlc.on { box-shadow: 0 0 0 3px var(--card), 0 0 0 5.5px var(--ink); }
+.hlhint { font-size: 12.5px; color: var(--ink3); line-height: 1.5; }
+.hlbox.hlon, .hlbox.hlon * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.hlbox.hlon { cursor: text; }
+.hlbox mark.hl[data-a] { cursor: pointer; }
+.hlprev { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
+.hlprev > div { position: fixed; opacity: .55; border-radius: 3px; }
+.notesbox { display: flex; flex-direction: column; gap: 10px; }
+.mynote { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--card); }
+.mynote .h { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+.mynote .t { line-height: 1.8; }
+.hllist { display: flex; flex-direction: column; gap: 8px; }
+.hlitem { display: flex; align-items: flex-start; gap: 8px; }
+.hlitem .en { line-height: 1.95; min-width: 0; }
+.hlitem .x { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink2); cursor: pointer; }
+.nonotes { color: var(--ink2); line-height: 1.8; font-size: 14.5px; }
+.hlq { line-height: 1.95; max-height: 40vh; overflow: auto; }
+.seg .cnt { display: inline-block; min-width: 18px; padding: 0 5px; margin-inline-start: 4px; border-radius: 9px; background: #FFE45C; color: #161616; font-size: 11.5px; font-weight: 700; line-height: 18px; font-family: var(--fe); }
+/* «ملاحظاتي» page */
+.cdot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: -2px; border: 1px solid rgba(0,0,0,.18); }
+.ntchips { margin-bottom: 12px; align-items: center; }
+.ntlist { padding: 6px 16px 14px; }
+.ntspec + .ntspec { border-top: 1px solid var(--line); margin-top: 6px; }
+.ntspec h2 { display: flex; align-items: center; gap: 8px; font-size: 17px; margin: 14px 0 4px; }
+.ntspec h2 .sdot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.ntspec h2 .n { font-size: 12.5px; font-weight: 500; color: var(--ink3); margin-inline-start: auto; }
+.ntspec h3 { font-size: 14px; color: var(--ink2); margin: 12px 0 6px; font-weight: 600; }
+.ntq { padding: 8px 0 10px; border-bottom: 1px dashed var(--line); display: flex; flex-direction: column; gap: 6px; }
+.ntq:last-child { border-bottom: 0; }
+.ntx { line-height: 1.95; font-size: calc(15px * var(--fs)); }
+.ntw { background: var(--chip); border-radius: 10px; padding: 8px 10px; line-height: 1.7; font-size: 14px; }
+.ntsrc { align-self: flex-end; background: none; border: 0; color: var(--pri); font-weight: 600; font-size: 13px; padding: 2px 0; cursor: pointer; font-family: var(--fe); }
+
 </style>
 </head>
 <body>
@@ -888,7 +930,7 @@ button.stat { width: 100%; }
 
   const DEFAULT_PREFS = {
     theme: 'light', fs: 1, explTab: 'sum', display: 'clean', shuffle: true, hideTags: false,
-    sumOnly: false, askConf: true, boardN: 100, boardMin: 120, examSec: 72, sessN: 40,
+    askConf: true, boardN: 100, boardMin: 120, examSec: 72, sessN: 40,
     sessMode: 'practice', showMistakeAns: false, timer: 'total', flow: 'step', heroHide: true,
   };
 
@@ -973,7 +1015,7 @@ button.stat { width: 100%; }
   };
 
   /* ---------- per-question state ---------- */
-  // state: {a:[[ts,key,ok,t,mode,sid,reason,conf]], s:1 star, h:1 hero, n:'note', f:1 flag, o:{override}, r:1 reviewed, u:ms}
+  // state: {a:[[ts,key,ok,t,mode,sid,reason,conf]], s:1 star, h:1 hero, n:'note', hl:[[start,end,color,text]] highlights, f:1 flag, o:{override}, r:1 reviewed, u:ms}
   S.st = (qid) => S.docs[bucketOf(qid)].q[qid] || null;
   function ensure(qid) {
     const b = S.docs[bucketOf(qid)];
@@ -1008,6 +1050,8 @@ button.stat { width: 100%; }
   // Hero questions are kept out of every session and review while the switch is on
   S.hidden = (qid) => S.pref('heroHide') !== false && !!S.info(qid).hero;
   S.setFlag = (qid, v) => { const st = ensure(qid); if (v) st.f = 1; else delete st.f; changedQ(qid); };
+  // highlights in the full explanation: [start, end, color, text], offsets into q.expl, sorted, not overlapping
+  S.setHl = (qid, list) => { const st = ensure(qid); if (list && list.length) st.hl = list; else delete st.hl; changedQ(qid); };
   S.setNote = (qid, t) => { const st = ensure(qid); t = (t || '').trim(); if (t) st.n = t; else delete st.n; changedQ(qid); };
   S.setOverride = (qid, o) => {
     const st = ensure(qid);
@@ -1058,7 +1102,7 @@ button.stat { width: 100%; }
     const diff = !n ? null : wrong >= 2 || okRate < 0.5 ? 'hard' : wrong >= 1 ? 'medium' : 'easy';
     c = {
       n, wrong, streak, active, due, last, lastTs: last ? last[0] * 1000 : 0, lastOk: last ? last[2] === 1 : null,
-      star: !!(st && st.s), hero: !!(st && st.h), note: (st && st.n) || '', flag: !!(st && st.f), ov: (st && st.o) || null, rev: !!(st && st.r),
+      star: !!(st && st.s), hero: !!(st && st.h), note: (st && st.n) || '', hl: (st && st.hl) || null, hlN: st && st.hl ? st.hl.length : 0, flag: !!(st && st.f), ov: (st && st.o) || null, rev: !!(st && st.r),
       reasons, tAvg: n ? tSum / n : 0, okRate, diff, guesses, attempts: a,
     };
     S.infoCache.set(qid, c);
@@ -1114,13 +1158,15 @@ button.stat { width: 100%; }
 
   /* ---------- merge ---------- */
   const atKey = (x) => x[0] + '|' + x[1];
+  // the fields of a question's state that are taken whole from its newer copy (attempts are merged)
+  const QF = ['s', 'h', 'n', 'hl', 'f', 'o', 'r'];
   function mergeQ(a, b) {
     if (!a) return b;
     if (!b) return a;
     const newer = (a.u || 0) >= (b.u || 0) ? a : b;
     const older = newer === a ? b : a;
     const out = {};
-    for (const k of ['s', 'n', 'f', 'o', 'r']) if (newer[k] !== undefined) out[k] = newer[k];
+    for (const k of QF) if (newer[k] !== undefined) out[k] = newer[k];
     const map = new Map();
     for (const x of older.a || []) map.set(atKey(x), x);
     for (const x of newer.a || []) map.set(atKey(x), x);
@@ -1132,7 +1178,7 @@ button.stat { width: 100%; }
   function fillQ(cur, old) {
     if (!cur) return U.clone(old);
     const out = mergeQ(cur, old);
-    for (const k of ['s', 'n', 'f', 'o', 'r']) if (out[k] === undefined && old[k] !== undefined) out[k] = old[k];
+    for (const k of QF) if (out[k] === undefined && old[k] !== undefined) out[k] = old[k];
     return out;
   }
   // copy into dstQ the attempts of srcQ made after `cut` (seconds); true if anything was added
@@ -1796,7 +1842,7 @@ button.stat { width: 100%; }
     if (s.kind === 'chapter' && q.ch != null) return s.name + ' · Ch.' + q.ch + n;
     return s.name + n;
   };
-  // how many questions of one source fall in each of its years or chapters, given the other filters
+  // how a source is divided: by year, by chapter, or not at all
   B.srcParts = function (src) {
     const s = B.sources[src];
     return s && s.kind === 'year' ? 'year' : s && s.kind === 'chapter' ? 'ch' : null;
@@ -1804,18 +1850,6 @@ button.stat { width: 100%; }
   B.optText = (q, k) => {
     const o = q.opts.find((x) => x.k === k);
     return o ? o.t : k;
-  };
-  B.similar = function (q, n = 4) {
-    const e = B.eff(q);
-    const out = [];
-    if (q.dup) for (const x of B.list) if (x !== q && x.dup === q.dup) out.push(x);
-    const key = e.sub || e.topic;
-    if (key) {
-      const pool = B.list.filter((x) => x !== q && !out.includes(x) && B.usable(x) && B.eff(x).tax.includes(key));
-      pool.sort((a, b) => (a.src === q.src) - (b.src === q.src) || a.order.localeCompare(b.order));
-      out.push(...pool);
-    }
-    return out.slice(0, n);
   };
   B.searchText = (q) => q._s || (q._s = (q.stem + ' ' + q.opts.map((o) => o.t).join(' ') + ' ' + q.expl + ' ' + q.sum).toLowerCase());
   B.isDemo = (q) => !!B.src(q).demo;
@@ -2835,6 +2869,7 @@ button.stat { width: 100%; }
     edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/>',
     note: '<path d="M5 3h10l4 4v14H5z"/><path d="M9 12h6M9 16h4"/>',
     flag: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+    notes: '<path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17z"/><path d="m14.5 7.5 3 3"/><path d="M13 20h7"/>',
     hero: '<path d="M12 3 4.5 6v5.6c0 4.5 3.2 8.3 7.5 9.4 4.3-1.1 7.5-4.9 7.5-9.4V6z"/><path d="m8.8 12.2 2.2 2.2 4.3-4.4"/>',
     cplan: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h3M8 17h6"/>',
   };
@@ -2843,7 +2878,7 @@ button.stat { width: 100%; }
   const NAV = [
     ['home', 'الرئيسية', 'home'], ['plan', 'خطة اليوم', 'plan'], ['cplan', 'خطة خاصة', 'cplan'], ['bank', 'بنك الأسئلة', 'bank'],
     ['filter', 'الفلترة والامتحان', 'filter'], ['mistakes', 'مراجعة الأخطاء', 'mistakes'], ['starred', 'المحفوظة', 'star'],
-    ['hero', 'Hero 🦸', 'hero'], ['stats', 'الإحصائيات', 'stats'],
+    ['notes', 'ملاحظاتي', 'notes'], ['hero', 'Hero 🦸', 'hero'], ['stats', 'الإحصائيات', 'stats'],
   ];
   const NAV2 = [['library', 'المصادر والاستيراد', 'library'], ['prefs', 'الإعدادات والنسخ', 'prefs']];
   const BNAV = [['home', 'الرئيسية', 'home'], ['filter', 'الفلترة', 'filter'], ['mistakes', 'الأخطاء', 'mistakes'], ['stats', 'الإحصائيات', 'stats'], ['more', 'المزيد', 'more']];
@@ -3072,6 +3107,10 @@ button.stat { width: 100%; }
   ui.bar = (pct, color) => '<div class="bar"><i style="width:' + U.clamp(pct, 0, 100) + '%;' + (color ? 'background:' + color : '') + '"></i></div>';
   // accuracy status for meters (status palette + text label, never colour alone)
   ui.accStatus = (p) => (p == null ? ['var(--ink3)', '—', ''] : p >= 80 ? ['var(--st-good)', 'جيد', '✓'] : p >= 65 ? ['var(--st-warn)', 'متوسط', '◐'] : p >= 50 ? ['var(--st-serious)', 'ضعيف', '▲'] : ['var(--st-critical)', 'ضعيف جدًا', '▲']);
+  // what shows first after answering (one setting, used by the settings, the Aa sheet and the start sheet)
+  UB.EXPL_FIRST = [['notes', '📝 ملاحظتي'], ['sum', '⚡ الملخص'], ['full', '📖 الشرح الكامل'], ['both', 'الاثنان معًا']];
+  ui.explFirstSeg = (cur, a = 'et') => '<div class="seg">' + UB.EXPL_FIRST.map(([v, l]) => '<button class="' + ((cur || 'sum') === v ? 'on' : '') + '" data-a="' + a + '" data-v="' + v + '">' + l + '</button>').join('') + '</div>' +
+    ((cur || 'sum') === 'notes' ? '<div class="note" style="margin:6px 2px 0">السؤال الذي ليس فيه ملاحظات يظهر فيه الملخص.</div>' : '');
   ui.chip = (attrs, label, cls, n) => '<button class="chip ' + (cls || '') + '" ' + attrs + '><span class="t">' + label + '</span>' + (n != null ? '<span class="n">' + n + '</span>' : '') + '</button>';
   ui.switchRow = (key, title, desc, on, extra) => '<div class="sw-row"><div class="t"><b>' + title + '</b>' + (desc ? '<span>' + desc + '</span>' : '') + '</div>' + (extra || '') +
     '<button class="switch' + (on ? ' on' : '') + '" role="switch" aria-checked="' + (on ? 'true' : 'false') + '" data-a="sw" data-k="' + key + '" aria-label="' + U.esc(title) + '"></button></div>';
@@ -3135,7 +3174,7 @@ button.stat { width: 100%; }
     S.on('sync', ui.updateSync);
   };
   ui.moreMenu = function () {
-    const items = [['plan', 'خطة اليوم', 'plan'], ['bank', 'بنك الأسئلة', 'bank'], ['cplan', 'خطة خاصة', 'cplan'], ['starred', 'المحفوظة', 'star'], ['hero', 'Hero 🦸', 'hero'], ['library', 'المصادر والاستيراد', 'library'], ['prefs', 'الإعدادات والنسخ الاحتياطي', 'prefs']];
+    const items = [['plan', 'خطة اليوم', 'plan'], ['bank', 'بنك الأسئلة', 'bank'], ['cplan', 'خطة خاصة', 'cplan'], ['starred', 'المحفوظة', 'star'], ['notes', 'ملاحظاتي', 'notes'], ['hero', 'Hero 🦸', 'hero'], ['library', 'المصادر والاستيراد', 'library'], ['prefs', 'الإعدادات والنسخ الاحتياطي', 'prefs']];
     ui.sheet({
       cls: 'sm',
       html: sh('المزيد') + '<div class="card">' + items.map(([id, l, ic]) => '<button class="ni" data-a="go" data-v="' + id + '" style="border-radius:0">' + ui.icon(ic) + '<span>' + l + '</span></button>').join('') + '</div>',
@@ -3162,7 +3201,7 @@ button.stat { width: 100%; }
     const qids = (vis.length ? vis : o.qids).slice(0, MAXQ);
     const s = {
       id: 's' + U.uid(8), kind: o.kind || 'practice', title: o.title || '', created: Date.now(), qids, i: 0,
-      disp: o.disp || 'clean', shuf: !!o.shuf, hideTags: !!o.hideTags, sumOnly: !!o.sumOnly, flow: o.flow || S.pref('flow') || 'step',
+      disp: o.disp || 'clean', shuf: !!o.shuf, hideTags: !!o.hideTags, flow: o.flow || S.pref('flow') || 'step',
       timer: o.timer && o.timer.kind !== 'none' ? { kind: 'total', sec: Math.max(60, Math.round(o.timer.sec)) } : { kind: 'none' },
       elapsed: 0, ans: {}, flags: {}, strike: {}, guess: {}, qt: {}, done: false, src: o.src || null,
       hero: !!o.hero, plan: o.plan || null,
@@ -3292,7 +3331,7 @@ button.stat { width: 100%; }
     const at = startIdx ? qids.indexOf(all[startIdx]) : 0;
     const s = {
       id: res.id, kind: res.kind, title: res.title, qids, i: Math.max(0, at),
-      disp: 'clean', shuf: false, hideTags: false, sumOnly: false, flow: S.pref('flow') || 'step', timer: { kind: 'none' }, elapsed: res.sec,
+      disp: 'clean', shuf: false, hideTags: false, flow: S.pref('flow') || 'step', timer: { kind: 'none' }, elapsed: res.sec,
       ans: {}, flags: {}, strike: {}, guess: {}, qt: {}, done: true, review: true,
     };
     for (const qid in res.ans || {}) {
@@ -3321,7 +3360,7 @@ button.stat { width: 100%; }
       perq: S.pref('examSec') || 72,
       mins: o.board ? S.pref('boardMin') : Math.max(5, Math.round(((S.pref('examSec') || 72) * Math.min(total, S.pref('sessN') || 40)) / 60)),
       disp: o.board ? 'clean' : S.pref('display') || 'clean',
-      shuf: o.board ? true : S.pref('shuffle'), hideTags: o.board ? true : S.pref('hideTags'), sumOnly: S.pref('sumOnly'),
+      shuf: o.board ? true : S.pref('shuffle'), hideTags: o.board ? true : S.pref('hideTags'), et: S.pref('explTab') || 'sum',
       flow: S.pref('flow') || 'step',
     };
     if (o.board) { st.mode = 'exam'; st.n = Math.min(total, S.pref('boardN') || 100, MAXQ); }
@@ -3358,8 +3397,8 @@ button.stat { width: 100%; }
         '<div style="margin-top:10px">' +
         ui.switchRow('shuf', '🔀 خلط ترتيب الاختيارات', 'يتغير مكان الإجابة الصحيحة، فتحفظ المعلومة لا مكان الجواب', st.shuf) +
         ui.switchRow('hideTags', '🏷 إخفاء وسوم الموضوع', 'لا يظهر التخصص والموضوع فوق السؤال حتى لا يكشف الجواب', st.hideTags) +
-        (st.mode === 'practice' ? ui.switchRow('sumOnly', '⚡ الملخص فقط بعد الإجابة', 'للمرور السريع؛ الشرح الكامل يبقى متاحًا بلمسة', st.sumOnly) : '') +
         '</div>' +
+        (st.mode === 'practice' ? '<div class="lbl" style="font-size:14px;font-weight:700;margin:16px 0 8px">يظهر بعد الإجابة أولًا</div>' + ui.explFirstSeg(st.et) : '') +
         '<div class="acts"><span class="note" style="margin-inline-end:auto">يتذكر البرنامج اختياراتك للمرة القادمة · السجل لا يُمسح أبدًا</span>' +
         '<button class="btn g" data-a="close">إلغاء</button><button class="btn p" data-a="start" style="min-width:200px">' + (st.mode === 'exam' ? '⏱ ابدأ الامتحان · ' : '📖 ابدأ · ') + U.nQ(st.n) + '</button></div>';
     };
@@ -3376,6 +3415,7 @@ button.stat { width: 100%; }
         else if (a === 'mins') st.mins = U.clamp(st.mins + +el.dataset.d, 1, 600);
         else if (a === 'disp') st.disp = el.dataset.v;
         else if (a === 'flow') st.flow = el.dataset.v === 'scroll' ? 'scroll' : 'step';
+        else if (a === 'et') st.et = el.dataset.v;
         else if (a === 'sw') st[el.dataset.k] = !st[el.dataset.k];
         else if (a === 'start') { h.close(); start(); return; }
         h.update(html());
@@ -3395,12 +3435,12 @@ button.stat { width: 100%; }
       const p = S.docs.meta.prefs || (S.docs.meta.prefs = {});
       p.flow = st.flow;
       if (!o.board) {
-        p.sessMode = st.mode; p.display = st.disp; p.shuffle = st.shuf; p.hideTags = st.hideTags; p.sumOnly = st.sumOnly;
+        p.sessMode = st.mode; p.display = st.disp; p.shuffle = st.shuf; p.hideTags = st.hideTags; p.explTab = st.et;
         p.timer = st.tkind; p.examSec = st.perq;
         if (st.mode === 'practice') p.sessN = st.n;
       }
       S.touch('meta', true);
-      SE.create({ kind, title: o.title, qids: ids, disp: st.disp, shuf: st.shuf, hideTags: st.hideTags, sumOnly: st.sumOnly && kind !== 'exam', timer, src: o.src || null, flow: st.flow, hero: o.hero, plan: o.plan || null });
+      SE.create({ kind, title: o.title, qids: ids, disp: st.disp, shuf: st.shuf, hideTags: st.hideTags, timer, src: o.src || null, flow: st.flow, hero: o.hero, plan: o.plan || null });
       ui.params = {};
       ui.go('study');
     }
@@ -3423,7 +3463,7 @@ button.stat { width: 100%; }
     opt = opt || {};
     if (!qids.length) return;
     if (!UB.visible(qids, opt).length) { ui.toast('هذا السؤال في Hero، وأسئلة Hero مخفية من الجلسات الآن', 'bad'); return; }
-    const s = SE.create({ kind: kind || 'practice', title, qids, hero: opt.hero, plan: opt.plan || null, disp: S.pref('display'), shuf: S.pref('shuffle'), hideTags: S.pref('hideTags'), sumOnly: S.pref('sumOnly'), timer: { kind: 'none' }, flow: S.pref('flow') });
+    const s = SE.create({ kind: kind || 'practice', title, qids, hero: opt.hero, plan: opt.plan || null, disp: S.pref('display'), shuf: S.pref('shuffle'), hideTags: S.pref('hideTags'), timer: { kind: 'none' }, flow: S.pref('flow') });
     s.i = U.clamp(startAt || 0, 0, s.qids.length - 1);
     SE.save(s);
     ui.params = {};
@@ -3558,7 +3598,9 @@ button.stat { width: 100%; }
   function explHtml(s, q, tab0, qi) {
     const qa = qiAttr(qi);
     const a = s.ans[q.id];
-    const tab = tab0 || (qi == null && ui.st.tab) || (s.sumOnly ? 'sum' : S.pref('explTab') || 'sum');
+    const inf0 = S.info(q.id);
+    const first = S.pref('explTab') || 'sum';
+    const tab = tab0 || (qi == null && ui.st.tab) || (first === 'notes' ? (inf0.hlN || inf0.note ? 'notes' : 'sum') : first);
     const demo = B.isDemo(q);
     let verdict;
     if (!a) verdict = '<div class="verdict neutral"><div><b>— لم تُجب على هذا السؤال</b><span>الإجابة الصحيحة: ' + L[SE.order(s, q).indexOf(q.ans)] + '</span></div></div>';
@@ -3567,27 +3609,17 @@ button.stat { width: 100%; }
       const inf = S.info(q.id);
       verdict = '<div class="verdict bad"><div><b>✕ إجابة خاطئة</b><span>' + (s.review ? 'الإجابة الصحيحة: ' + L[SE.order(s, q).indexOf(q.ans)] : 'أُضيف إلى قائمة الأخطاء · أخطأت فيه ' + U.nTimes(inf.wrong)) + '</span></div></div>';
     }
-    const seg = '<div class="seg"><button class="' + (tab === 'sum' ? 'on' : '') + '" data-a="tab" data-v="sum"' + qa + '>⚡ الملخص</button><button class="' + (tab === 'full' ? 'on' : '') + '" data-a="tab" data-v="full"' + qa + '>📖 الشرح الكامل</button><button class="' + (tab === 'both' ? 'on' : '') + '" data-a="tab" data-v="both"' + qa + '>الاثنان معًا</button></div>';
+    const nN = inf0.hlN + (inf0.note ? 1 : 0);
+    const seg = '<div class="seg"><button class="' + (tab === 'notes' ? 'on' : '') + '" data-a="tab" data-v="notes"' + qa + '>📝 ملاحظتي' + (nN ? '<span class="cnt">' + nN + '</span>' : '') + '</button>' +
+      '<button class="' + (tab === 'sum' ? 'on' : '') + '" data-a="tab" data-v="sum"' + qa + '>⚡ الملخص</button><button class="' + (tab === 'full' ? 'on' : '') + '" data-a="tab" data-v="full"' + qa + '>📖 الشرح الكامل</button><button class="' + (tab === 'both' ? 'on' : '') + '" data-a="tab" data-v="both"' + qa + '>الاثنان معًا</button></div>';
     const sum = '<div class="sum"><h5><span class="ens">Quick summary</span><span style="font-weight:500;font-size:12.5px">ملخص' + (q.sum ? '' : ' (من الشرح)') + '</span></h5><p class="en">' + sumHtml(q, s) + '</p></div>';
     const refs = (q.refs || []).length ? '<div class="ref en">' + q.refs.map(esc).join(' · ') + '</div>' : '';
     const page = q.page ? '<div class="ref">صفحة ' + esc(q.page) + ' في المصدر</div>' : '';
-    const full = '<div class="full"><h5><span class="ens">' + (demo ? 'Full explanation (sample)' : 'Full explanation (from the book)') + '</span><span style="font-weight:500;font-size:12.5px;color:var(--ink3)">' + (demo ? 'شرح تجريبي' : 'الشرح الكامل') + '</span></h5><div class="en">' + paras(q.expl) + '</div>' + imgsHtml(q, 'expl') + refs + page + '</div>';
-    const body = tab === 'sum' ? sum : tab === 'full' ? full : sum + full;
-    let sim = '';
-    if (!s.review) {
-      const list = B.similar(q, 3);
-      if (list.length) {
-        sim = '<div class="card"><div class="sec" style="padding:12px 14px 0;margin:0"><h3 style="font-size:15px">أسئلة مشابهة من الموضوع نفسه</h3></div>' +
-          list.map((x) => {
-            const inSess = s.qids.includes(x.id);
-            return '<div class="list-row" style="align-items:center"><div class="grow"><div class="qs en">' + esc(x.stem) + '</div><div class="m"><span class="mini pri">' + esc(B.srcLabel(x)) + '</span>' + (S.info(x.id).n ? '<span class="mini">حللته</span>' : '') + '</div></div>' +
-              (inSess ? '<span class="note">في الجلسة</span>' : '<button class="btn s sm" data-a="addsim" data-id="' + esc(x.id) + '"' + qa + '>＋ بعد هذا السؤال</button>') + '</div>';
-          }).join('') + '</div>';
-      }
-    }
+    const full = '<div class="full"><h5><span class="ens">' + (demo ? 'Full explanation (sample)' : 'Full explanation (from the book)') + '</span><span style="font-weight:500;font-size:12.5px;color:var(--ink3)">' + (demo ? 'شرح تجريبي' : 'الشرح الكامل') + '</span></h5>' + (q.expl ? UB.HL.bar() + UB.HL.box(q) : '<div class="en">' + paras(q.expl) + '</div>') + imgsHtml(q, 'expl') + refs + page + '</div>';
+    const body = tab === 'notes' ? UB.HL.notesHtml(q, qa) : tab === 'sum' ? sum : tab === 'full' ? full : sum + full;
     const cnote = q.conflict ? B.reviewNote(q) : '';
     const warn = q.conflict ? '<div class="cwarn">⚠️ <b>انتبه: ملف هذا السؤال يقول إن الجواب في المفتاح لا يتطابق مع الشرح.</b>' + (cnote ? '<div class="en">' + esc(cnote) + '</div>' : '') + '</div>' : '';
-    return verdict + warn + seg + body + sim;
+    return verdict + warn + seg + body;
   }
 
   V.study = {
@@ -3668,9 +3700,11 @@ button.stat { width: 100%; }
         }, 1000);
       }
       if (s && flowOf(s) === 'scroll') setupScroll(s);
+      UB.HL.attach();
     },
     leave() {
       clearInterval(ticker);
+      UB.HL.cancel();
       const s = SE.cur();
       if (s && SE.live(s)) { SE.leaveQ(s); SE.pause(s); SE.save(s); }
       ui.st.qid = null;
@@ -3740,6 +3774,9 @@ button.stat { width: 100%; }
           ui.refresh();
           return;
         case 'note': if (q) UB.noteSheet(q, () => ui.refresh()); return;
+        case 'hlc': ui.st.hlColor = ui.st.hlColor === el.dataset.v ? '' : el.dataset.v; UB.HL.cancel(); ui.refresh(); return;
+        case 'hlmark': { const box = el.closest('.hlbox'); if (box) UB.HL.menu(box.dataset.q, +el.dataset.h); return; }
+        case 'hldel': { const hq = B.byId[el.dataset.q]; if (hq) { UB.HL.remove(hq, +el.dataset.h); UB._agg = null; ui.refresh(); } return; }
         case 'edit': if (q) UB.editQuestion(q, () => ui.refresh()); return;
         case 'hist':
           if (!q) return;
@@ -3750,11 +3787,6 @@ button.stat { width: 100%; }
         case 'grid': return gridSheet(s);
         case 'submit': return confirmSubmit(s);
         case 'img': UB.viewImage(el.dataset.src, el.dataset.cap); return;
-        case 'addsim': {
-          const id = el.dataset.id;
-          if (!s.qids.includes(id)) { s.qids.splice(s.i + 1, 0, id); SE.save(s); ui.toast('أُضيف بعد هذا السؤال'); ui.refresh(); }
-          return;
-        }
       }
     },
     key(e) {
@@ -4005,7 +4037,7 @@ button.stat { width: 100%; }
       return ui.sh('حجم الخط والمظهر') +
         '<div class="lbl" style="font-weight:700;margin-bottom:8px">حجم خط السؤال</div><div class="row"><div class="stepper"><button class="sb" data-a="fs" data-d="-0.05">−</button><span class="st ens" style="min-width:56px;text-align:center;font-weight:700">' + Math.round(fs * 100) + '%</span><button class="sb" data-a="fs" data-d="0.05">+</button></div><button class="chip" data-a="fs0">إعادة 100%</button></div>' +
         '<div class="lbl" style="font-weight:700;margin:16px 0 8px">المظهر</div><div class="seg"><button class="' + (th === 'light' ? 'on' : '') + '" data-a="th" data-v="light">☀︎ فاتح</button><button class="' + (th === 'sepia' ? 'on' : '') + '" data-a="th" data-v="sepia">📜 بيج للقراءة</button><button class="' + (th === 'dark' ? 'on' : '') + '" data-a="th" data-v="dark">☾ داكن</button></div>' +
-        '<div class="lbl" style="font-weight:700;margin:16px 0 8px">يظهر بعد الإجابة أولًا</div><div class="seg"><button class="' + (et === 'sum' ? 'on' : '') + '" data-a="et" data-v="sum">⚡ الملخص</button><button class="' + (et === 'full' ? 'on' : '') + '" data-a="et" data-v="full">📖 الشرح الكامل</button><button class="' + (et === 'both' ? 'on' : '') + '" data-a="et" data-v="both">الاثنان</button></div>' +
+        '<div class="lbl" style="font-weight:700;margin:16px 0 8px">يظهر بعد الإجابة أولًا</div>' + ui.explFirstSeg(et) +
         '<div class="lbl" style="font-weight:700;margin:16px 0 8px">طريقة عرض الأسئلة</div><div class="seg"><button class="' + (fl !== 'scroll' ? 'on' : '') + '" data-a="flow" data-v="step">سؤال بسؤال</button><button class="' + (fl === 'scroll' ? 'on' : '') + '" data-a="flow" data-v="scroll">↕ تمرير متواصل</button></div>' +
         '<div class="acts"><button class="btn p" data-a="close">تم</button></div>';
     };
@@ -4025,7 +4057,7 @@ button.stat { width: 100%; }
         if (a === 'fs') S.setPref('fs', Math.round(U.clamp((S.pref('fs') || 1) + +el.dataset.d, 0.8, 1.6) * 100) / 100);
         else if (a === 'fs0') S.setPref('fs', 1);
         else if (a === 'th') S.setPref('theme', el.dataset.v);
-        else if (a === 'et') { S.setPref('explTab', el.dataset.v); ui.st.tab = null; }
+        else if (a === 'et') { S.setPref('explTab', el.dataset.v); ui.st.tab = null; ui.st.tabs = {}; }
         else return;
         ui.applyTheme();
         h.update(html());
@@ -5458,12 +5490,12 @@ button.stat { width: 100%; }
         '<div class="card pad"><div class="sec"><h3>القراءة</h3></div>' +
         '<div class="lbl" style="font-weight:600;margin-bottom:6px">حجم خط السؤال</div><div class="row"><div class="stepper"><button class="sb" data-a="fs" data-d="-0.05">−</button><span class="st ens" style="min-width:56px;text-align:center;font-weight:700">' + Math.round(fs * 100) + '%</span><button class="sb" data-a="fs" data-d="0.05">+</button></div></div>' +
         '<div class="lbl" style="font-weight:600;margin:14px 0 6px">المظهر</div>' + seg('th', th, [['light', '☀︎ فاتح'], ['sepia', '📜 بيج'], ['dark', '☾ داكن']]) +
-        '<div class="lbl" style="font-weight:600;margin:14px 0 6px">يظهر بعد الإجابة أولًا</div>' + seg('et', et, [['sum', '⚡ الملخص'], ['full', '📖 الشرح الكامل'], ['both', 'الاثنان']]) + '</div>' +
+        '<div class="lbl" style="font-weight:600;margin:14px 0 6px">يظهر بعد الإجابة أولًا</div>' + ui.explFirstSeg(et) + '</div>' +
         '<div class="card pad"><div class="sec"><h3>الجلسات</h3></div>' +
         '<div class="lbl" style="font-weight:600;margin-bottom:6px">طريقة عرض الأسئلة</div>' + seg('flow', S.pref('flow') === 'scroll' ? 'scroll' : 'step', [['step', 'سؤال بسؤال'], ['scroll', '↕ تمرير متواصل']]) +
         '<div class="lbl" style="font-weight:600;margin:14px 0 6px">عرض إجاباتي السابقة (افتراضيًا)</div>' + seg('disp', disp, [['clean', '🧼 نظيف'], ['hint', '💡 تلميح'], ['full', '👁 كامل']]) +
         '<div style="margin-top:8px">' + ui.switchRow('shuffle', '🔀 خلط ترتيب الاختيارات', '', S.pref('shuffle')) + ui.switchRow('hideTags', '🏷 إخفاء وسوم الموضوع', '', S.pref('hideTags')) +
-        ui.switchRow('sumOnly', '⚡ الملخص فقط بعد الإجابة', '', S.pref('sumOnly')) + ui.switchRow('askConf', '🤔 زر "أخمّن" قبل الإجابة', 'الإجابة الصحيحة بالتخمين تبقى في المراجعة', S.pref('askConf')) + '</div></div>' +
+        ui.switchRow('askConf', '🤔 زر "أخمّن" قبل الإجابة', 'الإجابة الصحيحة بالتخمين تبقى في المراجعة', S.pref('askConf')) + '</div></div>' +
         '<div class="card pad"><div class="sec"><h3>محاكاة البورد العراقي</h3></div><div class="note" style="margin-bottom:10px">اضبطها حسب نظام امتحانك النهائي (عدد الأسئلة والوقت).</div>' +
         '<div class="row" style="margin-bottom:8px">' + step('boardN', S.pref('boardN'), 10, 'سؤالًا') + '</div><div class="row" style="margin-bottom:8px">' + step('boardMin', S.pref('boardMin'), 10, 'دقيقة') + '</div>' +
         '<div class="lbl" style="font-weight:600;margin:10px 0 6px">الوقت الافتراضي للسؤال في الامتحانات الأخرى</div><div class="row">' + step('examSec', S.pref('examSec'), 6, 'ثانية') + '</div></div>' +
@@ -5493,7 +5525,7 @@ button.stat { width: 100%; }
       switch (a) {
         case 'fs': S.setPref('fs', Math.round(U.clamp((S.pref('fs') || 1) + +el.dataset.d, 0.8, 1.6) * 100) / 100); ui.applyTheme(); return;
         case 'th': S.setPref('theme', el.dataset.v); ui.applyTheme(); return;
-        case 'et': S.setPref('explTab', el.dataset.v); return;
+        case 'et': S.setPref('explTab', el.dataset.v); ui.st.tab = null; ui.st.tabs = {}; return;
         case 'disp': S.setPref('display', el.dataset.v); return;
         case 'flow': S.setPref('flow', el.dataset.v === 'scroll' ? 'scroll' : 'step'); return;
         case 'sw': {
@@ -5871,6 +5903,392 @@ button.stat { width: 100%; }
     ui.toast('✓ حُفظت الخطة «' + name + '»', 'ok');
     ui.refresh();
   }
+})();
+
+</script><script>
+/* UroBank — highlighter: colored highlights in the full explanation, gathered in «ملاحظتي».
+   A highlight is [start, end, color, text]: offsets into q.expl plus the text itself, so it can be found again
+   if the explanation changes. With a color picked, a drag on the text highlights; with none, the text selects as usual. */
+(function () {
+  'use strict';
+  const UB = window.UB;
+  const U = UB.U, S = UB.S, B = UB.B, ui = UB.ui;
+  const esc = U.esc;
+
+  const COLORS = [['y', 'أصفر'], ['g', 'أخضر'], ['p', 'وردي'], ['b', 'أزرق']];
+  const HL = (UB.HL = { COLORS });
+  HL.cname = (c) => (COLORS.find((x) => x[0] === c) || COLORS[0])[1];
+  const W = /[\p{L}\p{N}'’-]/u; // a character inside a word
+  const HAS_WORD = /[\p{L}\p{N}]/u;
+
+  /* ---------- the stored highlights, placed on the current text ---------- */
+  HL.list = function (q) {
+    const T = q.expl || '';
+    return (S.info(q.id).hl || []).map((h, i) => {
+      let [s, e, c, t] = h;
+      t = t || '';
+      if (T.slice(s, e) !== t) {
+        const k = t ? T.indexOf(t) : -1;
+        if (k >= 0) { s = k; e = k + t.length; } else { s = e = -1; }
+      }
+      return { i, s, e, c: c || 'y', t };
+    });
+  };
+  HL.count = (q) => S.info(q.id).hlN;
+
+  // whole words only, no spaces at the ends; a single point = the word under it
+  HL.snap = function (T, a, b) {
+    if (a > b) [a, b] = [b, a];
+    a = U.clamp(a, 0, T.length);
+    b = U.clamp(b, 0, T.length);
+    if (a === b) {
+      while (a > 0 && W.test(T[a - 1])) a--;
+      while (b < T.length && W.test(T[b])) b++;
+    } else {
+      while (a > 0 && a < T.length && W.test(T[a - 1]) && W.test(T[a])) a--;
+      while (b < T.length && b > 0 && W.test(T[b - 1]) && W.test(T[b])) b++;
+    }
+    while (a < b && /\s/.test(T[a])) a++;
+    while (b > a && /\s/.test(T[b - 1])) b--;
+    return [a, b];
+  };
+
+  function save(q, spans, keep) {
+    const T = q.expl || '';
+    const list = spans
+      .map(([s, e, c]) => { [s, e] = HL.snap(T, s, e); return [s, e, c, T.slice(s, e)]; })
+      .filter((h) => h[1] > h[0] && HAS_WORD.test(h[3]))
+      .sort((x, y) => x[0] - y[0]);
+    S.setHl(q.id, list.concat(keep || []));
+  }
+  // add [a, b) in color c: it replaces what it covers, and joins a neighbour of the same color
+  HL.add = function (q, a, b, c) {
+    const T = q.expl || '';
+    [a, b] = HL.snap(T, a, b);
+    if (b <= a || !HAS_WORD.test(T.slice(a, b))) return false;
+    const placed = HL.list(q);
+    const raw = S.info(q.id).hl || [];
+    const lost = raw.filter((h, i) => placed[i].s < 0); // no longer found in the text: kept as notes
+    const out = [];
+    for (const h of placed) {
+      if (h.s < 0) continue;
+      if (h.e <= a || h.s >= b) { out.push([h.s, h.e, h.c]); continue; }
+      if (h.s < a) out.push([h.s, a, h.c]);
+      if (h.e > b) out.push([b, h.e, h.c]);
+    }
+    out.push([a, b, c]);
+    out.sort((x, y) => x[0] - y[0]);
+    const merged = [];
+    for (const h of out) {
+      const last = merged[merged.length - 1];
+      if (last && last[2] === h[2] && h[0] <= last[1] + 2 && /^[\s,;:.]*$/.test(T.slice(last[1], h[0]))) last[1] = Math.max(last[1], h[1]);
+      else merged.push(h.slice());
+    }
+    save(q, merged, lost);
+    return true;
+  };
+  HL.remove = (q, idx) => S.setHl(q.id, (S.info(q.id).hl || []).filter((_, i) => i !== idx));
+  HL.recolor = (q, idx, c) => S.setHl(q.id, (S.info(q.id).hl || []).map((h, i) => (i === idx ? [h[0], h[1], c, h[3]] : h)));
+
+  /* ---------- drawing ---------- */
+  // the full explanation as paragraphs; every piece of text carries its offset in q.expl (data-o)
+  HL.fullHtml = function (q) {
+    const T = q.expl || '';
+    const hs = HL.list(q).filter((h) => h.s >= 0 && h.e > h.s).sort((x, y) => x.s - y.s);
+    const paras = [];
+    const rx = /\n\s*\n/g;
+    let last = 0, m;
+    while ((m = rx.exec(T))) { paras.push([last, m.index]); last = m.index + m[0].length; }
+    paras.push([last, T.length]);
+    let out = '';
+    for (const [ps, pe] of paras) {
+      if (pe <= ps) continue;
+      const cuts = new Set([ps, pe]);
+      for (const h of hs) { if (h.s > ps && h.s < pe) cuts.add(h.s); if (h.e > ps && h.e < pe) cuts.add(h.e); }
+      for (let k = ps; k < pe; k++) if (T[k] === '\n') { cuts.add(k); cuts.add(k + 1); }
+      const pts = [...cuts].sort((x, y) => x - y);
+      let html = '';
+      for (let j = 0; j < pts.length - 1; j++) {
+        const a = pts[j], b = pts[j + 1];
+        if (b - a === 1 && T[a] === '\n') { html += '<br>'; continue; }
+        const h = hs.find((x) => x.s <= a && x.e >= b);
+        const txt = esc(T.slice(a, b));
+        html += h ? '<mark class="hl hl-' + h.c + '" data-o="' + a + '" data-h="' + h.i + '" data-a="hlmark">' + txt + '</mark>' : '<span data-o="' + a + '">' + txt + '</span>';
+      }
+      out += '<p>' + html + '</p>';
+    }
+    return out;
+  };
+  HL.box = (q) => '<div class="en hlbox' + (ui.st.hlColor ? ' hlon' : '') + '" data-q="' + esc(q.id) + '">' + HL.fullHtml(q) + '</div>';
+  HL.bar = function () {
+    const cur = ui.st.hlColor || '';
+    return '<div class="hlbar"><span class="hlpen">🖍 تظليل</span>' +
+      COLORS.map(([c, n]) => '<button class="hlc hl-' + c + (cur === c ? ' on' : '') + '" data-a="hlc" data-v="' + c + '" aria-label="' + n + '" title="' + n + '"></button>').join('') +
+      '<span class="hlhint">' + (cur ? 'مرّر إصبعك على الجملة · اضغط اللون مرة ثانية للإيقاف' : 'اختر لونًا ثم مرّر إصبعك على الجملة') + '</span></div>';
+  };
+  // the «ملاحظتي» tab of one question: the written note, then the highlights in text order
+  HL.notesHtml = function (q, qa) {
+    const inf = S.info(q.id);
+    const list = HL.list(q).sort((x, y) => (x.s < 0) - (y.s < 0) || x.s - y.s);
+    let html = '';
+    if (inf.note) {
+      html += '<div class="mynote"><div class="h"><b>📝 ملاحظتي المكتوبة</b><button class="btn g sm" data-a="note"' + qa + '>تعديل</button></div>' +
+        '<div class="t">' + esc(inf.note).replace(/\n/g, '<br>') + '</div></div>';
+    }
+    if (list.length) {
+      html += '<div class="hllist">' + list.map((h) => '<div class="hlitem"><div class="en grow"><mark class="hl hl-' + h.c + '">' + esc(h.t) + '</mark>' +
+        (h.s < 0 ? '<div class="note" style="direction:rtl">لم تعد هذه الجملة في الشرح بعد تحديث الملف، لكنها محفوظة هنا.</div>' : '') + '</div>' +
+        '<button class="x" data-a="hldel" data-q="' + esc(q.id) + '" data-h="' + h.i + '" aria-label="إزالة" title="إزالة">✕</button></div>').join('') + '</div>';
+    }
+    if (!html) html = '<div class="nonotes">لا توجد ملاحظات على هذا السؤال بعد.<br>افتح «📖 الشرح الكامل»، اختر لونًا 🖍، ثم مرّر إصبعك على الجملة.</div>';
+    if (!inf.note) html += '<button class="btn g sm" data-a="note"' + qa + ' style="margin-top:10px">📝 اكتب ملاحظة</button>';
+    return '<div class="notesbox">' + html + '</div>';
+  };
+
+  /* ---------- a touch on the text -> a position in q.expl ---------- */
+  function caretAt(x, y) {
+    if (document.caretRangeFromPoint) {
+      const r = document.caretRangeFromPoint(x, y);
+      return r ? { node: r.startContainer, off: r.startOffset } : null;
+    }
+    if (document.caretPositionFromPoint) {
+      const p = document.caretPositionFromPoint(x, y);
+      return p ? { node: p.offsetNode, off: p.offset } : null;
+    }
+    return null;
+  }
+  HL.posAt = function (box, x, y) {
+    const c = caretAt(x, y);
+    if (!c || !box.contains(c.node)) return null;
+    let node = c.node, off = c.off;
+    if (node.nodeType !== 3) {
+      const down = (n, end) => { while (n && n.nodeType !== 3) n = end ? n.lastChild : n.firstChild; return n; };
+      let t = down(node.childNodes[off], false);
+      if (t) off = 0;
+      else { t = down(node.childNodes[off - 1], true); if (!t) return null; off = t.length; }
+      node = t;
+    }
+    const el = node.parentElement && node.parentElement.closest('[data-o]');
+    if (!el || !box.contains(el)) return null;
+    return +el.dataset.o + off;
+  };
+  function domAt(box, pos) {
+    let best = null;
+    for (const el of box.querySelectorAll('[data-o]')) {
+      const o = +el.dataset.o, t = el.firstChild;
+      if (!t) continue;
+      if (pos >= o && pos <= o + t.length) return { node: t, off: pos - o };
+      if (o > pos) return best || { node: t, off: 0 };
+      best = { node: t, off: t.length };
+    }
+    return best;
+  }
+
+  /* ---------- the drag ---------- */
+  let layer = null, g = null, lastTouch = 0;
+  const HOLD = 260, SLOP = 8;
+  const textOf = (box) => ((B.byId[box.dataset.q] || {}).expl || '');
+  function preview() {
+    if (!layer) { layer = document.createElement('div'); layer.className = 'hlprev'; document.body.appendChild(layer); }
+    layer.innerHTML = '';
+    if (!g || g.a == null) return;
+    const [a, b] = HL.snap(textOf(g.box), g.a, g.b);
+    if (b <= a) return;
+    const p = domAt(g.box, a), q = domAt(g.box, b);
+    if (!p || !q) return;
+    const r = document.createRange();
+    try { r.setStart(p.node, p.off); r.setEnd(q.node, q.off); } catch (e) { return; }
+    let html = '';
+    for (const rc of r.getClientRects()) {
+      if (rc.width < 1) continue;
+      html += '<div class="hl-' + g.c + '" style="left:' + rc.left + 'px;top:' + rc.top + 'px;width:' + rc.width + 'px;height:' + rc.height + 'px"></div>';
+    }
+    layer.innerHTML = html;
+  }
+  function clearPreview() { if (layer) layer.innerHTML = ''; }
+  function begin(box, x, y, how) {
+    cancel();
+    const p = HL.posAt(box, x, y);
+    g = { box, x0: x, y0: y, a: p, b: p, c: ui.st.hlColor || 'y', how, on: false };
+    // holding still a moment also starts it: then the word under the finger lights up
+    g.t = setTimeout(() => { if (g && !g.on && g.a != null) { g.on = true; preview(); } }, HOLD);
+  }
+  function moveTo(x, y) {
+    if (!g) return false;
+    if (!g.on) {
+      const dx = Math.abs(x - g.x0), dy = Math.abs(y - g.y0);
+      if (g.how !== 'touch') { if (dx + dy < 4) return false; } // mouse or Apple Pencil: any direction
+      else {
+        if (dx < SLOP && dy < SLOP) return false;
+        if (dy >= dx) { cancel(); return false; } // up/down: the page scrolls as usual
+      }
+      g.on = true;
+    }
+    const p = HL.posAt(g.box, x, y);
+    if (p != null) { if (g.a == null) g.a = p; g.b = p; }
+    preview();
+    return true;
+  }
+  function finish() {
+    if (!g) return false;
+    clearTimeout(g.t);
+    const was = g;
+    g = null;
+    clearPreview();
+    if (!was.on || was.a == null) return false;
+    const q = B.byId[was.box.dataset.q];
+    if (!q) return false;
+    if (HL.add(q, was.a, was.b, was.c)) {
+      UB._agg = null;
+      ui.refresh();
+    }
+    return true;
+  }
+  function cancel() { if (g) { clearTimeout(g.t); g = null; } clearPreview(); }
+  HL.cancel = cancel;
+
+  // called after each render: the boxes with a color on listen for drags
+  HL.attach = function () {
+    document.querySelectorAll('.hlbox.hlon').forEach((box) => {
+      if (box._hl) return;
+      box._hl = 1;
+      box.addEventListener('touchstart', (e) => {
+        lastTouch = Date.now();
+        if (e.touches.length !== 1) { cancel(); return; }
+        const t = e.touches[0];
+        begin(box, t.clientX, t.clientY, t.touchType === 'stylus' ? 'pen' : 'touch');
+      }, { passive: true });
+      box.addEventListener('touchmove', (e) => {
+        if (e.touches.length !== 1) { cancel(); return; }
+        const t = e.touches[0];
+        if (moveTo(t.clientX, t.clientY) && e.cancelable) e.preventDefault();
+      }, { passive: false });
+      box.addEventListener('touchend', (e) => { lastTouch = Date.now(); if (finish() && e.cancelable) e.preventDefault(); }, { passive: false });
+      box.addEventListener('touchcancel', cancel, { passive: true });
+      box.addEventListener('mousedown', (e) => {
+        if (e.button !== 0 || Date.now() - lastTouch < 600) return; // the mouse events a tap also sends
+        begin(box, e.clientX, e.clientY, 'mouse');
+        const mm = (ev) => { if (moveTo(ev.clientX, ev.clientY)) ev.preventDefault(); };
+        const mu = () => {
+          document.removeEventListener('mousemove', mm);
+          document.removeEventListener('mouseup', mu);
+          if (finish()) { const stop = (ev) => { ev.stopPropagation(); ev.preventDefault(); }; document.addEventListener('click', stop, { capture: true, once: true }); setTimeout(() => document.removeEventListener('click', stop, true), 50); }
+        };
+        document.addEventListener('mousemove', mm);
+        document.addEventListener('mouseup', mu);
+      });
+    });
+  };
+
+  /* ---------- a tap on a highlight: another color, or remove ---------- */
+  HL.menu = function (qid, idx) {
+    const q = B.byId[qid];
+    const h = q && (S.info(qid).hl || [])[idx];
+    if (!h) return;
+    ui.sheet({
+      cls: 'sm',
+      html: ui.sh('🖍 هذا التظليل') + '<div class="hlq en"><mark class="hl hl-' + h[2] + '">' + esc(h[3]) + '</mark></div>' +
+        '<div class="lbl" style="margin:14px 0 8px;font-weight:700">غيّر اللون</div><div class="row" style="gap:12px">' +
+        COLORS.map(([c, n]) => '<button class="hlc hl-' + c + (c === h[2] ? ' on' : '') + '" data-a="recolor" data-v="' + c + '" aria-label="' + n + '" title="' + n + '"></button>').join('') + '</div>' +
+        '<div class="acts"><button class="btn dg" data-a="rm">إزالة التظليل</button><button class="btn p" data-a="close">تم</button></div>',
+      onAct: (a, el, e, sh) => {
+        if (a === 'recolor') { HL.recolor(q, idx, el.dataset.v); sh.close(); ui.refresh(); }
+        else if (a === 'rm') { HL.remove(q, idx); sh.close(); UB._agg = null; ui.refresh(); ui.toast('أُزيل التظليل'); }
+      },
+    });
+  };
+})();
+
+</script><script>
+/* UroBank — «ملاحظاتي»: everything highlighted or written, by specialty then topic, as one list to read before the exam */
+(function () {
+  'use strict';
+  const UB = window.UB;
+  const U = UB.U, S = UB.S, B = UB.B, ui = UB.ui, V = UB.V;
+  const esc = U.esc, tx = UB.tx;
+  const NONE = '~';
+
+  const dot = (c) => '<span class="cdot hl-' + c + '"></span>';
+
+  V.notes = {
+    render() {
+      if (!B.loaded) return '<div class="view"><div class="loading">جارٍ التحميل…</div></div>';
+      const HL = UB.HL;
+      const sel = ui.st.ntc || (ui.st.ntc = []); // picked colors; 'w' = written notes; none = everything
+      const want = (c) => !sel.length || sel.includes(c);
+      const cnt = { y: 0, g: 0, p: 0, b: 0, w: 0 };
+      let hidden = 0;
+      const rows = [];
+      for (const q of B.list) {
+        const inf = S.info(q.id);
+        if (!inf.hlN && !inf.note) continue;
+        if (S.hidden(q.id)) { hidden++; continue; }
+        const all = HL.list(q).sort((x, y) => (x.s < 0) - (y.s < 0) || x.s - y.s);
+        for (const h of all) cnt[h.c] = (cnt[h.c] || 0) + 1;
+        if (inf.note) cnt.w++;
+        const items = all.filter((h) => want(h.c));
+        const note = want('w') ? inf.note : '';
+        if (!items.length && !note) continue;
+        const e = B.eff(q);
+        rows.push({ q, items, note, spec: e.spec && tx.get(e.spec) ? e.spec : NONE, topic: e.topic && tx.get(e.topic) ? e.topic : NONE });
+      }
+      // specialty -> topic -> questions, in the order of the topic list; then the source order
+      const specRank = (id) => { const i = tx.specs.findIndex((x) => x.id === id); return i < 0 ? 999 : i; };
+      const topicRank = (sp, id) => { if (id === NONE) return -1; const s = tx.get(sp); const i = s ? s.topics.findIndex((x) => x.id === id) : -1; return i < 0 ? 998 : i; };
+      rows.sort((a, b) => specRank(a.spec) - specRank(b.spec) || topicRank(a.spec, a.topic) - topicRank(b.spec, b.topic) || a.q.order.localeCompare(b.q.order));
+      ui.st.ntList = rows.map((r) => r.q.id);
+
+      const total = cnt.y + cnt.g + cnt.p + cnt.b;
+      const chips = HL.COLORS.map(([c, n]) => ui.chip('data-a="col" data-v="' + c + '"', dot(c) + ' ' + n, sel.includes(c) ? 'inc' : '', cnt[c]))
+        .concat([ui.chip('data-a="col" data-v="w"', '📝 المكتوبة', sel.includes('w') ? 'inc' : '', cnt.w)]).join('');
+
+      let body = '';
+      let sp0 = null, tp0 = null;
+      for (const r of rows) {
+        if (r.spec !== sp0) {
+          if (sp0 !== null) body += '</div></section>';
+          const n = rows.filter((x) => x.spec === r.spec).length;
+          const color = r.spec === NONE ? 'var(--ink3)' : tx.color(r.spec);
+          body += '<section class="ntspec"><h2><span class="sdot" style="background:' + color + '"></span><span class="ens">' + esc(r.spec === NONE ? 'غير مصنّف' : tx.name(r.spec)) + '</span><span class="n">' + U.nQ(n) + '</span></h2><div>';
+          sp0 = r.spec;
+          tp0 = null;
+        }
+        if (r.topic !== tp0) {
+          body += '<h3 class="ens">' + esc(r.topic === NONE ? (r.spec === NONE ? '' : 'General') : tx.name(r.topic)) + '</h3>';
+          tp0 = r.topic;
+        }
+        body += '<div class="ntq">' +
+          r.items.map((h) => '<div class="ntx en"><mark class="hl hl-' + h.c + '">' + esc(h.t) + '</mark></div>').join('') +
+          (r.note ? '<div class="ntw">📝 ' + esc(r.note).replace(/\n/g, '<br>') + '</div>' : '') +
+          '<button class="ntsrc" data-a="open" data-id="' + esc(r.q.id) + '">افتح السؤال · <span dir="ltr">' + esc(B.srcLabel(r.q)) + '</span> ›</button></div>';
+      }
+      if (sp0 !== null) body += '</div></section>';
+
+      const empty = !total && !cnt.w;
+      return '<div class="view"><div class="vtop"><div><h1>📝 ملاحظاتي</h1><div class="sub">كل ما ظلّلته وكتبته، مرتّبًا حسب التخصص ثم الموضوع</div></div>' +
+        '<button class="btn p" data-a="start"' + (rows.length ? '' : ' disabled') + '>📖 تدرّب على أسئلتها</button></div>' +
+        (empty
+          ? '<div class="card"><div class="empty"><div class="big">🖍</div>لا توجد ملاحظات بعد.<br>أثناء حل الأسئلة افتح «📖 الشرح الكامل»، اختر لونًا، ثم مرّر إصبعك على الجملة. ستجدها هنا.</div></div>'
+          : '<div class="chips ntchips">' + chips + (sel.length ? '<button class="lnk" data-a="colclr">عرض الكل</button>' : '') + '</div>' +
+            (rows.length ? '<div class="card ntlist">' + body + '</div>' : '<div class="card"><div class="empty">لا توجد ملاحظات بهذا اللون.</div></div>')) +
+        (hidden ? '<div class="note" style="margin-top:10px">' + U.nQ(hidden) + ' في Hero لها ملاحظات ولا تظهر هنا لأن أسئلة Hero مخفية. تستطيع إظهارها من صفحة Hero.</div>' : '') +
+        '</div>';
+    },
+    act(a, el) {
+      const sel = ui.st.ntc || (ui.st.ntc = []);
+      if (a === 'col') {
+        const v = el.dataset.v;
+        const i = sel.indexOf(v);
+        if (i >= 0) sel.splice(i, 1); else sel.push(v);
+        ui.refresh();
+        return;
+      }
+      if (a === 'colclr') { sel.length = 0; ui.refresh(); return; }
+      const ids = ui.st.ntList || [];
+      if (a === 'open') { const i = ids.indexOf(el.dataset.id); UB.startList(ids, 'ملاحظاتي', 'practice', Math.max(0, i)); return; }
+      if (a === 'start' && ids.length) UB.startSheet({ qids: ids, title: 'ملاحظاتي', kind: 'practice' });
+    },
+  };
 })();
 
 </script><script>
@@ -6314,7 +6732,7 @@ button.stat { width: 100%; }
     ui.applyTheme();
     ui.bind();
     const soon = (title) => ({ render: () => '<div class="view"><div class="vtop"><h1>' + title + '</h1></div><div class="empty"><div class="big">🛠</div>هذه الشاشة قيد البناء.</div></div>' });
-    const names = { plan: 'خطة اليوم', bank: 'بنك الأسئلة', mistakes: 'مراجعة الأخطاء', starred: 'المحفوظة', stats: 'الإحصائيات', library: 'المصادر والاستيراد', 'needs-review': 'بحاجة لمراجعة', prefs: 'الإعدادات' };
+    const names = { plan: 'خطة اليوم', bank: 'بنك الأسئلة', mistakes: 'مراجعة الأخطاء', starred: 'المحفوظة', notes: 'ملاحظاتي', stats: 'الإحصائيات', library: 'المصادر والاستيراد', 'needs-review': 'بحاجة لمراجعة', prefs: 'الإعدادات' };
     for (const k in names) if (!UB.V[k]) UB.V[k] = soon(names[k]);
     ui.show();
     await B.load();
